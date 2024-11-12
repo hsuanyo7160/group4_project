@@ -7,62 +7,26 @@ from screen import Screen
 pygame.init()
 
 # 設定遊戲畫面
-# WIDTH, HEIGHT = 800, 600
-# screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('2D Battle Game - Player vs Player')
 scrn= Screen(WIDTH, HEIGHT)
-# 顏色設置
-# WHITE = (255, 255, 255)
-# RED = (255, 0, 0)
-# BLUE = (0, 0, 255)
-# BLACK = (0, 0, 0)
-# GREEN = (0, 255, 0)
-# YELLOW = (255, 255, 0)
 
-# FPS 設置
-#
-# clock = pygame.time.Clock()
+# 初始化玩家位置
+player1_x, player1_y = 100, HEIGHT - 220
+player2_x, player2_y = WIDTH - 200, HEIGHT - 220
 
-# 遊戲變數
-# player1_health = 100
-# player2_health = 100
-player1_x, player1_y = 100, HEIGHT - 120
-player2_x, player2_y = WIDTH - 160, HEIGHT - 120
-
-# 設定遊戲的增減速度
-# HEALTH_CHANGE_SPEED = 2
-# ENERGY_CHANGE_SPEED = 1
-
-# 重力與跳躍設定
-# GRAVITY = 0.5
-# JUMP_STRENGTH = -13
-# MAX_FALL_SPEED = 20
-
-# 攻擊冷卻時間設置（秒）
-# ATTACK_COOLDOWN = 0.5
-# player1_attack_time = 0
-# player2_attack_time = 0
-# attack_range = 100
-# energy_gain_per_move = 0.5
-# energy_full = 100
-
-
-        
 # 初始化玩家
 player1 = Player(RED, player1_x, player1_y)
 player2 = Player(BLUE, player2_x, player2_y)
 scrn.addPlayer(player1, player2)
-# all_sprites = pygame.sprite.Group()
-# all_sprites.add(player1)
-# all_sprites.add(player2)
-
 
 
 # 主遊戲迴圈
 def main_game():
     running = True
+    # 選擇地圖
     map_choice = scrn.choose_map()
-    countdown_time = 180  # Initialize countdown time once outside the loop
+    # 倒數計時
+    countdown_time = 180
     font = pygame.font.SysFont('Arial', 24)
     # 載入背景圖像
     background_image = pygame.image.load(f'images/background/{map_choice}')
@@ -110,16 +74,18 @@ def main_game():
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
         
         # 檢查遊戲結束
-        if player1.health <= 0 or player2.health <= 0:
-            winner = "Player 1" if player2.health <= 0 else "Player 2"
+        if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:
+            winner = "Player 1" if player2.health < player1.health else "Player 2"
+            if(player1.health == player2.health):
+                winner = "Tie"
             scrn.show_game_over(winner)
             if keys[pygame.K_r]:
                 player1.health = player2.health = 100
                 player1.energy = player2.energy = 0
                 player1.rect.x = player1_x
-                player1.rect.y = HEIGHT - 120
+                player1.rect.y = HEIGHT - 220
                 player2.rect.x = player2_x
-                player2.rect.y = HEIGHT - 120
+                player2.rect.y = HEIGHT - 220
             elif keys[pygame.K_q]:
                 running = False
         

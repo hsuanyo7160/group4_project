@@ -17,9 +17,17 @@ class Screen:
         self.all_sprites.add(self.player2)
     # 顯示 "遊戲結束" 畫面
     def show_game_over(self, winner):
+        # First text (game over message)
+        font = pygame.font.SysFont('Arial', 60)
+        text = font.render(f"Game Over!  {winner} Wins!", True, RED)
+        text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))  # Center the text
+        self.screen.blit(text, text_rect)
+
+        # Second text (tip message)
         font = pygame.font.SysFont('Arial', 20)
-        text = font.render(f"Game Over! {winner} Wins! Press R to Restart or Q to Quit", True, BLACK)
-        self.screen.blit(text, (WIDTH // 4, HEIGHT // 2))
+        tip = font.render("Press 'R' to restart , Q to leave", True, WHITE)
+        tip_rect = tip.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))  # Center the tip text
+        self.screen.blit(tip, tip_rect)
         
     def draw_health_energy_bar(self):
         # 玩家1的血量條
