@@ -92,6 +92,7 @@ class Player(pygame.sprite.Sprite):
         # 移動控制和能量增加
         keys = pygame.key.get_pressed()
         moved = False
+        self.defending = False
         
         if self.color == RED:  # 玩家1
             if keys[pygame.K_a]:
@@ -274,6 +275,7 @@ def choose_map():
         zoom_factor1 = 1.0
         zoom_factor2 = 1.0
         zoom_factor3 = 1.0
+        
         if option1_rect.collidepoint(mouse_x, mouse_y):
             zoom_factor1 = 1.1
         elif option2_rect.collidepoint(mouse_x, mouse_y):
@@ -293,8 +295,8 @@ def choose_map():
         screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT - 580))
         
         # Draw the preview images (zoomed in or normal size)
-        screen.blit(scaled_b1, (WIDTH // 2 - 450, HEIGHT // 2 - 200))  # Show preview for b1
-        screen.blit(scaled_b2, (WIDTH // 2 + 50, HEIGHT // 2 - 200))      # Show preview for b2
+        screen.blit(scaled_b1, (WIDTH // 2 - 450, HEIGHT // 2 - 200)) # Show preview for b1
+        screen.blit(scaled_b2, (WIDTH // 2 + 50, HEIGHT // 2 - 200))  # Show preview for b2
         screen.blit(scaled_b3, (WIDTH // 2 - 450, HEIGHT // 2 + 50))  # Show preview for b3
 
         # Check if mouse click is inside any of the option areas
