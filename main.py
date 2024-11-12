@@ -48,7 +48,6 @@ attack_range = 100
 energy_gain_per_move = 0.5
 energy_full = 100
 
-# 玩家類別
 class Player(pygame.sprite.Sprite):
     def __init__(self, color, x, y):
         super().__init__()
@@ -67,6 +66,7 @@ class Player(pygame.sprite.Sprite):
         self.y_velocity = 0
         self.jumping = False
         self.last_move_direction = None
+        self.last_jump_time = 0 
         self.jump_count = 0
         
     def update(self):
@@ -103,11 +103,15 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_d]:
                 self.rect.x += self.velocity
                 moved = True
-            if keys[pygame.K_w] and self.jump_count < 2:
+             # Jump logic with 0.5 second delay after last jump
+            current_time = pygame.time.get_ticks()  # Get current time in milliseconds
+            if keys[pygame.K_w] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
                 self.jump_count += 1
-            # if you are in the sky and press down, you will fall faster
+                self.last_jump_time = current_time  # Update last jump time
+                
+            # If you're in the air and press down, you will fall faster
             if keys[pygame.K_s] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
             elif keys[pygame.K_s]:
@@ -120,11 +124,17 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_RIGHT]:
                 self.rect.x += self.velocity
                 moved = True
-            if keys[pygame.K_UP] and self.jump_count < 2:
+            
+            # Jump logic with 0.5 second delay after last jump
+            current_time = pygame.time.get_ticks()  # Get current time in milliseconds
+            if keys[pygame.K_UP] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
+                # if you are in the sky and press up, velocity will be 
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
                 self.jump_count += 1
-            # if you are in the sky and press down, you will fall faster
+                self.last_jump_time = current_time
+                
+            # If you're in the air and press down, you will fall faster
             if keys[pygame.K_DOWN] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
             elif keys[pygame.K_DOWN]:
@@ -136,7 +146,7 @@ class Player(pygame.sprite.Sprite):
             if self.energy > energy_full:
                 self.energy = energy_full
 
-        # 應用重力
+        # Gravity
         if self.jumping:
             self.y_velocity += GRAVITY
             if self.y_velocity > MAX_FALL_SPEED:
@@ -144,12 +154,13 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.y += self.y_velocity
 
+        # Check if landed
         if self.rect.y >= HEIGHT - 120:
             self.rect.y = HEIGHT - 120
             self.jumping = False
             self.y_velocity = 0
-            self.jump_count = 0
-
+            self.jump_count = 0  # Reset jump count when the player lands
+            
     def attack(self, other_player, current_time, powerful=False):
         global player1_attack_time, player2_attack_time
 
@@ -215,16 +226,16 @@ while running:
     # 玩家攻擊判斷
     current_time = pygame.time.get_ticks() / 1000
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_j]:
+    if keys[pygame.K_f]:
         player1.attack(player2, current_time)
-    if keys[pygame.K_k]:
+    if keys[pygame.K_SLASH]:
         player2.attack(player1, current_time)
 
     # 強力攻擊
-    if keys[pygame.K_h] and player1.energy >= energy_full:
+    if keys[pygame.K_g] and player1.energy >= energy_full:
         player1.attack(player2, current_time, powerful=True)
         player1.energy = 0
-    if keys[pygame.K_l] and player2.energy >= energy_full:
+    if keys[pygame.K_PERIOD] and player2.energy >= energy_full:
         player2.attack(player1, current_time, powerful=True)
         player2.energy = 0
 
@@ -247,10 +258,9 @@ while running:
             player2.rect.y = HEIGHT - 120
         elif keys[pygame.K_q]:
             running = False
-
+    
     pygame.display.update()
     clock.tick(FPS)
 
 pygame.quit()
 sys.exit()
-
