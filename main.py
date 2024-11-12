@@ -9,10 +9,6 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('2D Battle Game - Player vs Player')
 
-# 載入背景圖像
-background_image = pygame.image.load('images/background1.jpg')
-background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-
 # 顏色設置
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -52,8 +48,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, color, x, y):
         super().__init__()
         self.color = color
-        self.image = pygame.Surface((50, 50))
-        self.image.fill(self.color)
+        self.image = pygame.image.load('images/player1.png') if color == RED else pygame.image.load('images/player2.png')
+        self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -68,6 +64,7 @@ class Player(pygame.sprite.Sprite):
         self.last_move_direction = None
         self.last_jump_time = 0 
         self.jump_count = 0
+        self.facing_left = False
         
     def update(self):
         # 使顯示的血量和能量逐漸逼近實際值
@@ -100,9 +97,16 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_a]:
                 self.rect.x -= self.velocity
                 moved = True
+                if not self.facing_left:  # Only flip if direction has changed
+                    self.facing_left = True
+                    self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
             if keys[pygame.K_d]:
                 self.rect.x += self.velocity
                 moved = True
+                if self.facing_left:  # Only flip if direction has changed
+                    self.facing_left = False
+                    self.image = self.image
+                    self.image = pygame.transform.flip(self.image, True, False)
              # Jump logic with 0.5 second delay after last jump
             current_time = pygame.time.get_ticks()  # Get current time in milliseconds
             if keys[pygame.K_w] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
@@ -110,7 +114,6 @@ class Player(pygame.sprite.Sprite):
                 self.jumping = True
                 self.jump_count += 1
                 self.last_jump_time = current_time  # Update last jump time
-                
             # If you're in the air and press down, you will fall faster
             if keys[pygame.K_s] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
@@ -121,10 +124,16 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_LEFT]:
                 self.rect.x -= self.velocity
                 moved = True
+                if not self.facing_left:  # Only flip if direction has changed
+                    self.facing_left = True
+                    self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
             if keys[pygame.K_RIGHT]:
                 self.rect.x += self.velocity
                 moved = True
-            
+                if self.facing_left:  # Only flip if direction has changed
+                    self.facing_left = False
+                    self.image = self.image
+                    self.image = pygame.transform.flip(self.image, True, False)
             # Jump logic with 0.5 second delay after last jump
             current_time = pygame.time.get_ticks()  # Get current time in milliseconds
             if keys[pygame.K_UP] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
@@ -133,13 +142,12 @@ class Player(pygame.sprite.Sprite):
                 self.jumping = True
                 self.jump_count += 1
                 self.last_jump_time = current_time
-                
             # If you're in the air and press down, you will fall faster
             if keys[pygame.K_DOWN] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
             elif keys[pygame.K_DOWN]:
                 self.defending = True
-
+            
         # 更新能量
         if moved:
             self.energy += energy_gain_per_move
@@ -179,13 +187,14 @@ class Player(pygame.sprite.Sprite):
                 if other_player.defending:
                     damage //= 2
                 other_player.health -= damage
-
+                
+    def draw(self, screen):
+        # Draw player image on screen
+        screen.blit(self.image, self.rect)
+        
 # 初始化玩家
 player1 = Player(RED, player1_x, player1_y)
 player2 = Player(BLUE, player2_x, player2_y)
-
-
-
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player1)
 all_sprites.add(player2)
@@ -212,55 +221,91 @@ def draw_health_energy_bar():
     # 玩家2的能量條
     pygame.draw.rect(screen, YELLOW, (WIDTH - 220, 50, player2.displayed_energy * 2, 10))
     pygame.draw.rect(screen, WHITE, (WIDTH - 220, 50, 200, 10), 2)
+
+def show_main_menu():
+    font = pygame.font.SysFont('Arial', 40)
+    title = font.render('2D Battle Game', True, WHITE)
+    start_button = font.render('Start Game', True, WHITE)
+    quit_button = font.render('Quit', True, WHITE)
     
+    screen.fill(BLACK)
+    screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 3))
+    screen.blit(start_button, (WIDTH // 2 - start_button.get_width() // 2, HEIGHT // 2))
+    screen.blit(quit_button, (WIDTH // 2 - quit_button.get_width() // 2, HEIGHT // 2 + 60))
+    
+    pygame.display.update()    
+
 # 主遊戲迴圈
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+def main_game():
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    player1.update()
-    player2.update()
+        player1.update()
+        player2.update()
 
-    # 玩家攻擊判斷
-    current_time = pygame.time.get_ticks() / 1000
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_f]:
-        player1.attack(player2, current_time)
-    if keys[pygame.K_SLASH]:
-        player2.attack(player1, current_time)
+        # 玩家攻擊判斷
+        current_time = pygame.time.get_ticks() / 1000
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_f]:
+            player1.attack(player2, current_time)
+        if keys[pygame.K_SLASH]:
+            player2.attack(player1, current_time)
 
-    # 強力攻擊
-    if keys[pygame.K_g] and player1.energy >= energy_full:
-        player1.attack(player2, current_time, powerful=True)
-        player1.energy = 0
-    if keys[pygame.K_PERIOD] and player2.energy >= energy_full:
-        player2.attack(player1, current_time, powerful=True)
-        player2.energy = 0
+        # 強力攻擊
+        if keys[pygame.K_g] and player1.energy >= energy_full:
+            player1.attack(player2, current_time, powerful=True)
+            player1.energy = 0
+        if keys[pygame.K_PERIOD] and player2.energy >= energy_full:
+            player2.attack(player1, current_time, powerful=True)
+            player2.energy = 0
 
-    screen.blit(background_image, (0, 0))
-    all_sprites.draw(screen)
+        # 載入背景圖像
+        background_image = pygame.image.load('images/background1.jpg')
+        background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+        screen.blit(background_image, (0, 0))
+        all_sprites.draw(screen)
 
-    # 顯示玩家1血量和能量條
-    draw_health_energy_bar()
+        # 顯示玩家1血量和能量條
+        draw_health_energy_bar()
 
-    # 檢查遊戲結束
-    if player1.health <= 0 or player2.health <= 0:
-        winner = "Player 1" if player2.health <= 0 else "Player 2"
-        show_game_over(winner)
-        if keys[pygame.K_r]:
-            player1.health = player2.health = 100
-            player1.energy = player2.energy = 0
-            player1.rect.x = player1_x
-            player1.rect.y = HEIGHT - 120
-            player2.rect.x = player2_x
-            player2.rect.y = HEIGHT - 120
-        elif keys[pygame.K_q]:
-            running = False
-    
-    pygame.display.update()
-    clock.tick(FPS)
+        # 檢查遊戲結束
+        if player1.health <= 0 or player2.health <= 0:
+            winner = "Player 1" if player2.health <= 0 else "Player 2"
+            show_game_over(winner)
+            if keys[pygame.K_r]:
+                player1.health = player2.health = 100
+                player1.energy = player2.energy = 0
+                player1.rect.x = player1_x
+                player1.rect.y = HEIGHT - 120
+                player2.rect.x = player2_x
+                player2.rect.y = HEIGHT - 120
+            elif keys[pygame.K_q]:
+                running = False
+        
+        pygame.display.update()
+        clock.tick(FPS)
+    pygame.quit()
+    sys.exit()
 
-pygame.quit()
-sys.exit()
+def menu_loop():
+    menu_running = True
+    while menu_running:
+        show_main_menu()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                menu_running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                # Start Game
+                if HEIGHT // 2 <= mouse_y <= HEIGHT // 2 + 40 and WIDTH // 2 - 150 <= mouse_x <= WIDTH // 2 + 150:
+                    menu_running = False
+                    main_game()
+                # Quit Game
+                if HEIGHT // 2 + 60 <= mouse_y <= HEIGHT // 2 + 100 and WIDTH // 2 - 100 <= mouse_x <= WIDTH // 2 + 100:
+                    menu_running = False
+                    pygame.quit()
+                    sys.exit()
+menu_loop()
