@@ -7,7 +7,7 @@ pygame.init()
 # 設定遊戲畫面
 WIDTH, HEIGHT = 1000, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('2D Battle Game - Player vs Player')
+pygame.display.set_caption('2D Battle Game')
 
 # 顏色設置
 WHITE = (255, 255, 255)
@@ -241,11 +241,10 @@ def show_main_menu():
 def choose_map():
     """Function to display the map selection screen with mouse-based selection and preview."""
     running = True
-    # 載入背景圖像
-    mapbackground = pygame.image.load(f'images/background/map.png')
+    # Load background image
+    mapbackground = pygame.image.load('images/background/map.png')
     mapbackground = pygame.transform.scale(mapbackground, (WIDTH, HEIGHT))
-    screen.blit(mapbackground, (0, 0))
-    
+
     font = pygame.font.SysFont('Arial', 32)
     title_text = font.render('Choose Your Map:', True, WHITE)
 
@@ -253,16 +252,14 @@ def choose_map():
     preview_b1 = pygame.image.load('images/background/b1.jpg')
     preview_b2 = pygame.image.load('images/background/b2.png')
     preview_b3 = pygame.image.load('images/background/b3.png')
-    
-    # Scale preview images to a smaller size (e.g., 200x100 pixels)
-    preview_b1 = pygame.transform.scale(preview_b1, (400, 200))
-    preview_b2 = pygame.transform.scale(preview_b2, (400, 200))
-    preview_b3 = pygame.transform.scale(preview_b3, (400, 200))
+
+    # Original sizes for previews
+    original_size = (400, 200)
 
     # Set up positions for options and preview images
-    option1_rect = pygame.Rect(WIDTH // 2 - 450, (HEIGHT // 2) - 200, 400, 200)
-    option2_rect = pygame.Rect(WIDTH // 2 + 50, HEIGHT // 2 - 200, 400, 200)
-    option3_rect = pygame.Rect(WIDTH // 2 - 450, (HEIGHT // 2) + 50, 400, 200)
+    option1_rect = pygame.Rect(WIDTH // 2 - 450, (HEIGHT // 2) - 200, *original_size)
+    option2_rect = pygame.Rect(WIDTH // 2 + 50, HEIGHT // 2 - 200, *original_size)
+    option3_rect = pygame.Rect(WIDTH // 2 - 450, (HEIGHT // 2) + 50, *original_size)
 
     while running:
         for event in pygame.event.get():
@@ -272,13 +269,33 @@ def choose_map():
         # Get the mouse position
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
+        # Check if mouse is hovering over the preview images and zoom in if so
+        # Scaling factor for zoom effect (1.0 is original size, 1.2 is 20% zoomed in)
+        zoom_factor1 = 1.0
+        zoom_factor2 = 1.0
+        zoom_factor3 = 1.0
+        if option1_rect.collidepoint(mouse_x, mouse_y):
+            zoom_factor1 = 1.1
+        elif option2_rect.collidepoint(mouse_x, mouse_y):
+            zoom_factor2 = 1.1
+        elif option3_rect.collidepoint(mouse_x, mouse_y):
+            zoom_factor3 = 1.1
+
+        # Scale the preview images based on the zoom factor
+        scaled_b1 = pygame.transform.scale(preview_b1, (int(original_size[0] * zoom_factor1), int(original_size[1] * zoom_factor1)))
+        scaled_b2 = pygame.transform.scale(preview_b2, (int(original_size[0] * zoom_factor2), int(original_size[1] * zoom_factor2)))
+        scaled_b3 = pygame.transform.scale(preview_b3, (int(original_size[0] * zoom_factor3), int(original_size[1] * zoom_factor3)))
+
+        # Blit the background image
+        screen.blit(mapbackground, (0, 0))
+        
         # Draw the title
         screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT - 580))
-
-        # Draw the preview images
-        screen.blit(preview_b1, (WIDTH // 2 - 450, HEIGHT // 2 - 200))  # Show preview for b1
-        screen.blit(preview_b2, (WIDTH // 2 + 50, HEIGHT // 2 - 200))      # Show preview for b2
-        screen.blit(preview_b3, (WIDTH // 2 - 450, (HEIGHT // 2) + 50))  # Show preview for b3
+        
+        # Draw the preview images (zoomed in or normal size)
+        screen.blit(scaled_b1, (WIDTH // 2 - 450, HEIGHT // 2 - 200))  # Show preview for b1
+        screen.blit(scaled_b2, (WIDTH // 2 + 50, HEIGHT // 2 - 200))      # Show preview for b2
+        screen.blit(scaled_b3, (WIDTH // 2 - 450, HEIGHT // 2 + 50))  # Show preview for b3
 
         # Check if mouse click is inside any of the option areas
         if pygame.mouse.get_pressed()[0]:  # Left mouse button
@@ -383,4 +400,5 @@ def menu_loop():
                     menu_running = False
                     pygame.quit()
                     sys.exit()
+
 menu_loop()
