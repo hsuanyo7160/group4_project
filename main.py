@@ -227,8 +227,11 @@ def show_main_menu():
     title = font.render('2D Battle Game', True, WHITE)
     start_button = font.render('Start Game', True, WHITE)
     quit_button = font.render('Quit', True, WHITE)
-    
-    screen.fill(BLACK)
+    print("show_main_menu")
+    # 載入背景圖像
+    menu_image = pygame.image.load('images/background/b2.png')
+    menu_image = pygame.transform.scale(menu_image, (WIDTH, HEIGHT))
+    screen.blit(menu_image, (0, 0))
     screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 3))
     screen.blit(start_button, (WIDTH // 2 - start_button.get_width() // 2, HEIGHT // 2))
     screen.blit(quit_button, (WIDTH // 2 - quit_button.get_width() // 2, HEIGHT // 2 + 60))
@@ -263,7 +266,7 @@ def main_game():
             player2.energy = 0
 
         # 載入背景圖像
-        background_image = pygame.image.load('images/background1.jpg')
+        background_image = pygame.image.load('images/background/b3.png')
         background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
         screen.blit(background_image, (0, 0))
         all_sprites.draw(screen)
