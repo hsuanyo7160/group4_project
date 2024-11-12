@@ -48,7 +48,6 @@ attack_range = 100
 energy_gain_per_move = 0.5
 energy_full = 100
 
-# 玩家類別
 class Player(pygame.sprite.Sprite):
     def __init__(self, color, x, y):
         super().__init__()
@@ -107,7 +106,7 @@ class Player(pygame.sprite.Sprite):
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
                 self.jump_count += 1
-            # if you are in the sky and press down, you will fall faster
+            # If you're in the air and press down, you will fall faster
             if keys[pygame.K_s] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
             elif keys[pygame.K_s]:
@@ -124,7 +123,7 @@ class Player(pygame.sprite.Sprite):
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
                 self.jump_count += 1
-            # if you are in the sky and press down, you will fall faster
+            # If you're in the air and press down, you will fall faster
             if keys[pygame.K_DOWN] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
             elif keys[pygame.K_DOWN]:
@@ -136,7 +135,7 @@ class Player(pygame.sprite.Sprite):
             if self.energy > energy_full:
                 self.energy = energy_full
 
-        # 應用重力
+        # Gravity
         if self.jumping:
             self.y_velocity += GRAVITY
             if self.y_velocity > MAX_FALL_SPEED:
@@ -144,12 +143,12 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.y += self.y_velocity
 
+        # Check if landed
         if self.rect.y >= HEIGHT - 120:
             self.rect.y = HEIGHT - 120
             self.jumping = False
             self.y_velocity = 0
-            self.jump_count = 0
-
+            self.jump_count = 0  # Reset jump count when the player lands
     def attack(self, other_player, current_time, powerful=False):
         global player1_attack_time, player2_attack_time
 
@@ -253,4 +252,3 @@ while running:
 
 pygame.quit()
 sys.exit()
-
