@@ -1,10 +1,11 @@
 import pygame
+from ch import character
 from const import *
 class Player(pygame.sprite.Sprite):
-    def __init__(self, color, x, y):
+    def __init__(self, color, x, y, index):
         super().__init__()
         self.color = color
-        self.image = pygame.image.load('images/player1.png') if color == RED else pygame.image.load('images/player2.png')
+        self.image = pygame.image.load(character.character_data[index]['icon']) if color == RED else pygame.image.load(character.character_data[index]['icon'])
         self.image = pygame.transform.scale(self.image, (200, 200))
         self.rect = self.image.get_rect()
         self.rect.x = x

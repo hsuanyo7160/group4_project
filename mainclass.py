@@ -15,8 +15,8 @@ scrn= Screen(WIDTH, HEIGHT)
 def main_game():
     running = True
     # choose character
-    player1c = scrn.choose_character()
-    player2c = scrn.choose_character()
+    pygame.time.wait(100)
+    playerlist = scrn.choose_character()
     # 選擇地圖
     map_choice = scrn.choose_map()
     # 倒數計時
@@ -31,8 +31,8 @@ def main_game():
     player2_x, player2_y = WIDTH - 200, HEIGHT - 220
 
     # 初始化玩家
-    player1 = Player(RED, player1_x, player1_y)
-    player2 = Player(BLUE, player2_x, player2_y)
+    player1 = Player(RED, player1_x, player1_y, playerlist[0])
+    player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
     scrn.addPlayer(player1, player2)
     while running:
         for event in pygame.event.get():
