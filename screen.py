@@ -131,6 +131,70 @@ class Screen:
 
             pygame.display.update()
             self.clock.tick(FPS)
+        pygame.quit()
+        sys.exit()
+    
+    def choose_character(self):
+        """Function to display the character selection screen with mouse-based selection and preview."""
+        running = True
+        # Load background image
+        characterbackground = pygame.image.load('images/background/map.png')
+        characterbackground = pygame.transform.scale(characterbackground, (WIDTH, HEIGHT))
 
+        font = pygame.font.SysFont('Arial', 32)
+        title_text = font.render('Choose Your Character:', True, WHITE)
+
+        # Load preview images for character selection
+        preview_p1 = pygame.image.load('images/character/Archer/Idle.png')
+        preview_p2 = pygame.image.load('images/character/Samurai/Idle.png')
+        
+
+        # Original sizes for previews
+        original_size = (200, 200)
+
+        # Set up positions for options and preview images
+        option1_rect = pygame.Rect(WIDTH // 2 - 250, (HEIGHT // 2) - 100, *original_size)
+        option2_rect = pygame.Rect(WIDTH // 2 + 50, HEIGHT // 2 - 100, *original_size)
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            # Get the mouse position
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+
+            # Check if mouse is hovering over the preview images and zoom in if so
+            # Scaling factor for zoom effect (1.0 is original size, 1.2 is 20% zoomed in)
+            zoom_factor1 = 1.0
+            zoom_factor2 = 1.0
+            if option1_rect.collidepoint(mouse_x, mouse_y):
+                zoom_factor1 = 1.1
+            elif option2_rect.collidepoint(mouse_x, mouse_y):
+                zoom_factor2 = 1.1
+
+            # Scale the preview images based on the zoom factor
+            scaled_p1 = pygame.transform.scale(preview_p1, (int(original_size[0] * zoom_factor1), int(original_size[1] * zoom_factor1)))
+            scaled_p2 = pygame.transform.scale(preview_p2, (int(original_size[0] * zoom_factor2), int(original_size[1] * zoom_factor2)))
+
+            # Blit the background image
+            self.screen.blit(characterbackground, (0, 0))
+            
+            # Draw the title
+            self.screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT - 580))
+            
+            # Draw the preview images (zoomed in or normal size)
+            self.screen.blit(scaled_p1, (WIDTH // 2 - 450, HEIGHT // 2 - 200))  
+            self.screen.blit(scaled_p2, (WIDTH // 2 + 50, HEIGHT // 2 - 200))
+            
+            # Check if mouse click is inside any of the option areas
+            if pygame.mouse.get_pressed()[0]:
+                if option1_rect.collidepoint(mouse_x, mouse_y):
+                    return 'Archer'
+                elif option2_rect.collidepoint(mouse_x, mouse_y):
+                    return 'Samurai'
+
+            pygame.display.update()
+            self.clock.tick(FPS)
         pygame.quit()
         sys.exit()

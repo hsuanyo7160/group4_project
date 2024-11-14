@@ -10,19 +10,13 @@ pygame.init()
 pygame.display.set_caption('2D Battle Game - Player vs Player')
 scrn= Screen(WIDTH, HEIGHT)
 
-# 初始化玩家位置
-player1_x, player1_y = 100, HEIGHT - 220
-player2_x, player2_y = WIDTH - 200, HEIGHT - 220
-
-# 初始化玩家
-player1 = Player(RED, player1_x, player1_y)
-player2 = Player(BLUE, player2_x, player2_y)
-scrn.addPlayer(player1, player2)
-
 
 # 主遊戲迴圈
 def main_game():
     running = True
+    # choose character
+    player1c = scrn.choose_character()
+    player2c = scrn.choose_character()
     # 選擇地圖
     map_choice = scrn.choose_map()
     # 倒數計時
@@ -32,6 +26,14 @@ def main_game():
     background_image = pygame.image.load(f'images/background/{map_choice}')
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
     
+    # 初始化玩家位置
+    player1_x, player1_y = 100, HEIGHT - 220
+    player2_x, player2_y = WIDTH - 200, HEIGHT - 220
+
+    # 初始化玩家
+    player1 = Player(RED, player1_x, player1_y)
+    player2 = Player(BLUE, player2_x, player2_y)
+    scrn.addPlayer(player1, player2)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
