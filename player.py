@@ -4,13 +4,14 @@ from const import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, color, x, y, index):
         super().__init__()
+        # Model
         self.color = color
         self.image = pygame.image.load(character.character_data[index]['icon']) if color == RED else pygame.image.load(character.character_data[index]['icon'])
         self.image = pygame.transform.scale(self.image, (200, 200))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.velocity = 5
+        # Status
         self.health = 100
         self.energy = 0
         self.displayed_health = 100
@@ -21,9 +22,14 @@ class Player(pygame.sprite.Sprite):
         self.last_jump_time = 0 
         self.jump_count = 0
         self.facing_left = False
-        self.attack_range = 100
-        self.energy_gain_per_move = 0.5
         self.attack_time = 0
+        # Attributes
+        self.attack_damage = 10
+        self.attack_damage_powerful = 30
+        self.energy_gain_per_move = 0.5
+        self.velocity = 5
+        self.attack_range = 100
+        self.defend_strength = 20
         
         self.k_left = pygame.K_a if color == RED else pygame.K_LEFT
         self.k_right = pygame.K_d if color == RED else pygame.K_RIGHT
@@ -112,9 +118,11 @@ class Player(pygame.sprite.Sprite):
             #player1_attack_time = current_time
             self.attack_time = current_time
             if abs(self.rect.x - other_player.rect.x) < self.attack_range:
-                damage = 30 if powerful else 10
+                damage = self.attack_damage_powerful if powerful else self.attack_damage
                 if other_player.defending:
-                    damage //= 2
+                    damage -= other_player.defend_strength
+                    if damage < 0:
+                        damage = 0
                 other_player.health -= damage
 
     def draw(self, screen):
