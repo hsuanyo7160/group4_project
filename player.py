@@ -1,20 +1,32 @@
 import pygame
 from ch import character
 from const import *
+
+def scale_image(image, target_height):
+    # 獲取原始尺寸
+    original_width, original_height = image.get_size()
+    # 計算新寬度，保持比例
+    aspect_ratio = original_width / original_height
+    target_width = int(target_height * aspect_ratio)
+    # 使用新尺寸進行縮放
+    scaled_image = pygame.transform.scale(image, (target_width, target_height))
+    return scaled_image
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, color, x, y, index):
         super().__init__()
         # Model
         self.color = color
         self.image = pygame.image.load(character.character_data[index]['icon']) if color == RED else pygame.image.load(character.character_data[index]['icon'])
-        self.image = pygame.transform.scale(self.image, (150, 200))
+        self.image = scale_image(self.image, 200)
+        ############ Need to Optimize##############
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         # Status
-        self.health = 100
+        self.health = 200
         self.energy = 0
-        self.displayed_health = 100
+        self.displayed_health = 200
         self.displayed_energy = 0
         self.defending = False
         self.y_velocity = 0

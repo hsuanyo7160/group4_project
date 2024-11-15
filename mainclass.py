@@ -11,6 +11,8 @@ pygame.display.set_caption('2D Battle Game - Player vs Player')
 scrn= Screen(WIDTH, HEIGHT)
 
 
+
+
 # 主遊戲迴圈
 def main_game():
     running = True
@@ -21,7 +23,7 @@ def main_game():
     map_choice = scrn.choose_map()
     # 倒數計時
     countdown_time = 180
-    font = pygame.font.SysFont('Arial', 24)
+    font = pygame.font.SysFont('Arial', 36)
     # 載入背景圖像
     background_image = pygame.image.load(f'images/background/{map_choice}')
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
@@ -49,7 +51,7 @@ def main_game():
             countdown_time = 0  # Stop the countdown at 0
         minutes = int(countdown_time // 60)
         seconds = int(countdown_time % 60)
-        countdown_text = font.render(f'Time: {minutes:02}:{seconds:02}', True, YELLOW)
+        countdown_text = font.render(f'Time: {minutes:02}:{seconds:02}', True, BLACK)
         
         
         # 玩家攻擊判斷

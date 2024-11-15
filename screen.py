@@ -1,8 +1,10 @@
 import pygame
 import sys
-from player import Player
+from player import scale_image
 from const import *
 from ch import character
+from pygame import Color
+
 class Screen:
     def __init__(self, width, height):
         self.width = width
@@ -18,7 +20,8 @@ class Screen:
     # 顯示 "遊戲結束" 畫面
     def show_game_over(self, winner):
         # First text (game over message)
-        font = pygame.font.SysFont('Arial', 60)
+        font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
+        font = pygame.font.Font(font_path, 48)
         text = font.render(f"Game Over!  {winner} Wins!", True, RED)
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))  # Center the text
         self.screen.blit(text, text_rect)
@@ -28,27 +31,42 @@ class Screen:
         tip = font.render("Press 'R' to restart , Q to leave", True, WHITE)
         tip_rect = tip.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))  # Center the tip text
         self.screen.blit(tip, tip_rect)
+    
+    def draw_gradient_bar(self, screen, start_color, end_color, rect):
+        for i in range(rect.width):
+            # 計算漸層顏色
+            ratio = i / rect.width
+            color = Color(
+                int(start_color.r * (1 - ratio) + end_color.r * ratio),
+                int(start_color.g * (1 - ratio) + end_color.g * ratio),
+                int(start_color.b * (1 - ratio) + end_color.b * ratio)
+            )
+            pygame.draw.line(screen, color, (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
+
         
     def draw_health_energy_bar(self):
-        # 玩家1的血量條
-        pygame.draw.rect(self.screen, RED, (20, 20, self.player1.displayed_health * 2, 20))  # 使用顯示的血量
-        pygame.draw.rect(self.screen, WHITE, (20, 20, 200, 20), 2)  # 邊框
-        
-        # 玩家1的能量條
-        pygame.draw.rect(self.screen, YELLOW, (20, 50, self.player1.displayed_energy * 2, 10))  # 使用顯示的能量
-        pygame.draw.rect(self.screen, WHITE, (20, 50, 200, 10), 2)
+        # 玩家1的血量條 - 漸層從亮紅到深紅
+        self.draw_gradient_bar(self.screen, Color(255, 0, 0), Color(139, 0, 0), pygame.Rect(20, 20, self.player1.displayed_health * 2, 18))
+        pygame.draw.rect(self.screen, WHITE, (20, 20, 400, 20), 2)  # 邊框
+
+        # 玩家1的能量條 - 漸層從亮黃到橙色
+        self.draw_gradient_bar(self.screen, Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(20, 50, self.player1.displayed_energy * 3, 8))
+        pygame.draw.rect(self.screen, WHITE, (20, 50, 300, 10), 2)  # 邊框
 
         # 玩家2的血量條
-        pygame.draw.rect(self.screen, BLUE, (WIDTH - 220, 20, self.player2.displayed_health * 2, 20))
-        pygame.draw.rect(self.screen, WHITE, (WIDTH - 220, 20, 200, 20), 2)
+        self.draw_gradient_bar(self.screen, Color(0, 0, 255), Color(0, 0, 139), pygame.Rect(WIDTH - 20 - self.player2.displayed_health * 2, 20, self.player2.displayed_health * 2, 18))
+        pygame.draw.rect(self.screen, WHITE, (WIDTH - 420, 20, 400, 20), 2)
 
         # 玩家2的能量條
-        pygame.draw.rect(self.screen, YELLOW, (WIDTH - 220, 50, self.player2.displayed_energy * 2, 10))
-        pygame.draw.rect(self.screen, WHITE, (WIDTH - 220, 50, 200, 10), 2)
+        self.draw_gradient_bar(self.screen, Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(WIDTH - 20 - self.player2.displayed_energy * 3, 50, self.player2.displayed_energy * 3, 8))
+        pygame.draw.rect(self.screen, WHITE, (WIDTH - 320, 50, 300, 10), 2)
 
     def show_main_menu(self):
-        font = pygame.font.SysFont('Arial', 40)
-        title = font.render('2D Battle Game', True, WHITE)
+        # 加載字體
+        font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
+        font = pygame.font.Font(font_path, 108)  # 字體大小
+        title = font.render('2D Battle Game', True, BLACK)
+        font = pygame.font.Font(font_path, 48) 
         start_button = font.render('Start Game', True, WHITE)
         quit_button = font.render('Quit', True, WHITE)
         
@@ -56,7 +74,7 @@ class Screen:
         menu_image = pygame.image.load('images/background/b2.png')
         menu_image = pygame.transform.scale(menu_image, (WIDTH, HEIGHT))
         self.screen.blit(menu_image, (0, 0))
-        self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 3))
+        self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 200))
         self.screen.blit(start_button, (WIDTH // 2 - start_button.get_width() // 2, HEIGHT // 2))
         self.screen.blit(quit_button, (WIDTH // 2 - quit_button.get_width() // 2, HEIGHT // 2 + 60))
         
@@ -152,7 +170,7 @@ class Screen:
         previews = []
         for i in range(len(character.character_data)):
             preview = pygame.image.load(character.character_data[i]['icon'])
-            preview = pygame.transform.scale(preview, (200, 200))
+            preview = scale_image(preview, 200)
             previews.append(preview)
 
         # 設定圖像原始大小和預覽區域位置
