@@ -34,6 +34,7 @@ def main_game():
     player1 = Player(RED, player1_x, player1_y, playerlist[0])
     player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
     scrn.addPlayer(player1, player2)
+    projectiles_group = pygame.sprite.Group()
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -41,7 +42,7 @@ def main_game():
 
         player1.update()
         player2.update()
-        
+        projectiles_group.update()
         # 更新倒數計時
         countdown_time -= 1 / FPS
         if countdown_time <= 0:
@@ -58,19 +59,28 @@ def main_game():
             player1.attack(player2, current_time)
         if keys[pygame.K_SLASH]:
             player2.attack(player1, current_time)
-
+            
+        # range attack
+        current_time = pygame.time.get_ticks() / 1000
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_g]:
+            player1.range_attack(player2, current_time, projectiles_group)  
+        if keys[pygame.K_PERIOD]:
+            player2.range_attack(player1, current_time, projectiles_group) 
+            
         # 強力攻擊
-        if keys[pygame.K_g] and player1.energy >= ENERGY_FULL:
+        if keys[pygame.K_h] and player1.energy >= ENERGY_FULL:
             player1.attack(player2, current_time, powerful=True)
             player1.energy = 0
-        if keys[pygame.K_PERIOD] and player2.energy >= ENERGY_FULL:
+        if keys[pygame.K_COMMA] and player2.energy >= ENERGY_FULL:
             player2.attack(player1, current_time, powerful=True)
             player2.energy = 0
 
         # Blit background image
         scrn.screen.blit(background_image, (0, 0))
         scrn.all_sprites.draw(scrn.screen)
-
+        projectiles_group.draw(scrn.screen)
+        
         # 顯示玩家血量, 能量條, 倒數計時
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
