@@ -7,7 +7,7 @@ class Player(pygame.sprite.Sprite):
         # Model
         self.color = color
         self.image = pygame.image.load(character.character_data[index]['icon']) if color == RED else pygame.image.load(character.character_data[index]['icon'])
-        self.image = pygame.transform.scale(self.image, (200, 200))
+        self.image = pygame.transform.scale(self.image, (150, 200))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -25,20 +25,21 @@ class Player(pygame.sprite.Sprite):
         self.attack_time = 0
         self.range_attack_time = 0
         # Attributes
-        self.attack_damage = 10
-        self.attack_damage_powerful = 30
-        self.energy_gain_per_move = 0.5
-        self.velocity = 5
-        self.attack_range = 100
-        self.defend_strength = 20
-        self.range_damage = 5
-        self.range_cooldown = 0.5
+        self.attack_damage = character.character_data[index]['attack_damage']
+        self.attack_damage_powerful = character.character_data[index]['attack_damage_powerful']
+        self.energy_gain_per_move = character.character_data[index]['energy_gain_per_move']
+        self.velocity = character.character_data[index]['velocity']
+        self.attack_range = character.character_data[index]['attack_range']
+        self.defend_strength = character.character_data[index]['defend_strength']
+        self.range_damage = character.character_data[index]['range_damage']
+        self.range_cooldown = character.character_data[index]['range_cooldown']
         
         # Key bindings
         self.left = pygame.K_a if color == RED else pygame.K_LEFT
         self.right = pygame.K_d if color == RED else pygame.K_RIGHT
         self.up = pygame.K_w if color == RED else pygame.K_UP
         self.down = pygame.K_s if color == RED else pygame.K_DOWN
+        
     def update(self):
         # 使顯示的血量和能量逐漸逼近實際值
         health_change_speed = 1  # 控制血量變化速度

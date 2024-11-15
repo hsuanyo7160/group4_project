@@ -156,7 +156,7 @@ class Screen:
             previews.append(preview)
 
         # 設定圖像原始大小和預覽區域位置
-        original_size = (200, 200)
+        original_size = (150, 200)
         option_rects = [pygame.Rect(WIDTH // 2 - 450 + 400 * i, HEIGHT // 2 - 100, *original_size) for i in range(len(character.character_data))]
 
         selected_characters = [None, None]  # 用來儲存兩位玩家的選擇
