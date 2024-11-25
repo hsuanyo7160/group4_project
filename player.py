@@ -3,6 +3,8 @@ from ch import character
 from const import *
 from spritesheet import Spritesheet
 
+import time
+
 def scale_image(image, target_height):
     # 獲取原始尺寸
     original_width, original_height = image.get_size()
@@ -43,6 +45,12 @@ class Player(pygame.sprite.Sprite):
         self.facing_left = False
         self.attack_time = 0
         self.range_attack_time = 0
+        # timer
+        self.atk_timer = 0
+        self.range_atk_timer = 0
+        self.special_timer = 0
+        self.common_timer = 0
+        self.last_tick = time.time()
         # Attributes
         self.attack_damage = character.character_data[index]['attack_damage']
         self.attack_damage_powerful = character.character_data[index]['attack_damage_powerful']
@@ -58,6 +66,13 @@ class Player(pygame.sprite.Sprite):
         self.right = pygame.K_d if color == RED else pygame.K_RIGHT
         self.up = pygame.K_w if color == RED else pygame.K_UP
         self.down = pygame.K_s if color == RED else pygame.K_DOWN
+        self.atk_key = pygame.K_f if color == RED else pygame.K_SLASH
+        self.range_atk_key = pygame.K_g if color == RED else pygame.K_PERIOD
+        self.special_key = pygame.K_h if color == RED else pygame.K_COMMA
+        # player binding
+        self.other_player = None
+        #group binding
+        self.projectiles_group = None
         
     def update(self):
         self.increaseframe()
@@ -142,14 +157,33 @@ class Player(pygame.sprite.Sprite):
             self.jumping = False
             self.y_velocity = 0
             self.jump_count = 0  # Reset jump count when the player lands
+        
+        # update timer
+        self.atk_timer += time.time() - self.last_tick
+        self.range_atk_timer += time.time() - self.last_tick
+        self.special_timer += time.time() - self.last_tick
+        self.common_timer += time.time() - self.last_tick
+        self.last_tick = time.time()
+
+        # attack kits
+        if keys[self.atk_key]:
+            self.attack(self.other_player)
+        if keys[self.range_atk_key]:
+            self.range_attack(self.other_player, self.projectiles_group)
+        if keys[self.special_key]:
+            self.attack(self.other_player, powerful=True)
+        # if keys[self.special_key]:
+        #     self.special_attack(self.other_player)
+        
             
-    def attack(self, other_player, current_time, powerful=False):
+    def attack(self, other_player, powerful=False):
         # global player1_attack_time, player2_attack_time
 
         # if self.color == RED and current_time - self.attack_time > ATTACK_COOLDOWN: # player1_attack_time >= ATTACK_COOLDOWN:
-        if(current_time - self.attack_time > ATTACK_COOLDOWN and self.defending == False):
+        if(self.atk_timer > ATTACK_COOLDOWN and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
             #player1_attack_time = current_time
-            self.attack_time = current_time
+            self.atk_timer = 0
+            self.common_timer = 0
             if abs(self.rect.x - other_player.rect.x) < self.attack_range:
                 damage = self.attack_damage_powerful if powerful else self.attack_damage
                 if other_player.defending:
@@ -158,16 +192,17 @@ class Player(pygame.sprite.Sprite):
                         damage = 0
                 other_player.health -= damage
                 
-    def range_attack(self, other_player, current_time, projectiles_group):
+    def range_attack(self, other_player, projectiles_group):
         """發射遠程攻擊（子彈）"""
         # 創建一個子彈並設定其初始位置和方向
-        if(current_time - self.attack_time > self.range_cooldown and self.defending == False):
-            self.attack_time = current_time
+        if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
+            self.range_atk_timer = 0
+            self.common_timer = 0
             direction = -1 if self.facing_left else 1
             projectile = Projectile(self.rect.centerx, self.rect.centery, other_player, self.range_damage, direction)
             projectiles_group.add(projectile)
     
-    def special_attack(self, other_player, current_time):
+    def special_attack(self, other_player):
         if(self.energy < 30):
             return None
         if self.index == 0:
