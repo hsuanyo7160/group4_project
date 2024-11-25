@@ -152,10 +152,35 @@ class Player(pygame.sprite.Sprite):
             direction = -1 if self.facing_left else 1
             projectile = Projectile(self.rect.centerx, self.rect.centery, other_player, self.range_damage, direction)
             projectiles_group.add(projectile)
+    
+    def special_attack(self, other_player, current_time):
+        if(self.energy < 30):
+            return None
+        if self.index == 0:
+            None
+            ## wait for next input
+            
+            ## increase speed of that input(dash)
+            
+            ## deal damage, add progectile , energy -30 and animation 
+        elif self.index == 1:
+            None
+            ## cant move and animation
+            
+            ## if health drop -> restore to original health, stunned enemy for 2s, spd atk up for 5s
+        elif self.index == 2:
+            None
+            ## teleport to enemy side and start shyuli
+            
+            ## deal lots of damage
+    
     def draw(self, screen):
         # Draw player image on screen
         screen.blit(self.image, self.rect)
-
+ 
+ ## range attack for commander and samurai
+ ## samurai: lower dmg but slow enemy
+ ## commander: add spd
 
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, other_player, damage, direction):
@@ -193,3 +218,4 @@ class Projectile(pygame.sprite.Sprite):
     def draw(self, screen):
         # Draw player image on screen
         screen.blit(self.image, self.rect)
+
