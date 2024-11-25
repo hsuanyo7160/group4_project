@@ -1,0 +1,15 @@
+Add boundary for arena
+    Character can't go out the map
+    
+Add spritesheet for character
+    think which animation is:
+        defend
+        normal attack
+        skill1
+        skill2
+fix UI
+
+Add skill other than f(normal attack)
+    g : range attack
+    h : consume 30 energy to ....
+    j : consume all energy to ...
