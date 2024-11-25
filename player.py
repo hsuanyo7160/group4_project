@@ -1,6 +1,7 @@
 import pygame
 from ch import character
 from const import *
+from spritesheet import Spritesheet
 
 def scale_image(image, target_height):
     # 獲取原始尺寸
@@ -19,11 +20,17 @@ class Player(pygame.sprite.Sprite):
         self.color = color
         self.image = pygame.image.load(character.character_data[index]['icon']) if color == RED else pygame.image.load(character.character_data[index]['icon'])
         self.image = scale_image(self.image, 200)
+        self.index = index
+        self.sprite_sheet = Spritesheet(character.character_data[index]['idle'], character.character_data[self.index]['idleFrame'])
+        self.frame_counter = 0  # 計數器
+        self.frame_rate = 10    # 幀速率，每 10 幀更新一次動畫幀
+        self.frame = 0
         ############ Need to Optimize##############
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         # Status
+        self.status = IDLE
         self.health = 200
         self.energy = 0
         self.displayed_health = 200
@@ -53,6 +60,8 @@ class Player(pygame.sprite.Sprite):
         self.down = pygame.K_s if color == RED else pygame.K_DOWN
         
     def update(self):
+        self.increaseframe()
+        # print(self.frame)
         # 使顯示的血量和能量逐漸逼近實際值
         health_change_speed = 1  # 控制血量變化速度
         energy_change_speed = 3  # 控制能量變化速度
@@ -88,12 +97,14 @@ class Player(pygame.sprite.Sprite):
             
         if(self.defending == False):
             if keys[self.left]:
+                self.changeStatus(WALK)
                 self.rect.x -= self.velocity
                 moved = True
                 if not self.facing_left:  # Only flip if direction has changed
                     self.facing_left = True
                     self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
             if keys[self.right]:
+                self.changeStatus(WALK)
                 self.rect.x += self.velocity
                 moved = True
                 if self.facing_left:  # Only flip if direction has changed
@@ -105,9 +116,12 @@ class Player(pygame.sprite.Sprite):
             if keys[self.up] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
+                self.changeStatus(JUMP)
                 self.jump_count += 1
                 self.last_jump_time = current_time  # Update last jump time
-        
+        if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False:
+            self.changeStatus(IDLE)
+
         # 更新能量
         if moved:
             self.energy += self.energy_gain_per_move
@@ -176,7 +190,31 @@ class Player(pygame.sprite.Sprite):
     
     def draw(self, screen):
         # Draw player image on screen
+        self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
+        if self.facing_left:
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.image = scale_image(self.image, 400)
         screen.blit(self.image, self.rect)
+
+    def changeStatus(self, status):
+        if self.status != status:
+            self.frame = 0
+        self.status = status
+        if status == IDLE:
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['idle'], character.character_data[self.index]['idleFrame'])
+        elif status == WALK:
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
+        elif status == JUMP:
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['jump'], character.character_data[self.index]['jumpFrame'])
+        elif status == ATTACK1:
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
+        
+    def increaseframe(self):
+        """增加動畫幀，根據 frame_rate 決定是否更新"""
+        self.frame_counter += 1
+        if self.frame_counter >= self.frame_rate:
+            self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
+            self.frame_counter = 0  # 重置計數器
  
  ## range attack for commander and samurai
  ## samurai: lower dmg but slow enemy

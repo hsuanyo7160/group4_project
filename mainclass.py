@@ -28,8 +28,8 @@ def main_game():
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
     
     # 初始化玩家位置
-    player1_x, player1_y = 100, HEIGHT - 220
-    player2_x, player2_y = WIDTH - 200, HEIGHT - 220
+    player1_x, player1_y = 100, HEIGHT - 820
+    player2_x, player2_y = WIDTH - 200, HEIGHT - 820
 
     # 初始化玩家
     player1 = Player(RED, player1_x, player1_y, playerlist[0])
@@ -83,7 +83,9 @@ def main_game():
         scrn.screen.blit(background_image, (0, 0))
         scrn.all_sprites.draw(scrn.screen)
         projectiles_group.draw(scrn.screen)
-        
+        #blit player
+        player1.draw(scrn.screen)
+        player2.draw(scrn.screen)
         # 顯示玩家血量, 能量條, 倒數計時
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
