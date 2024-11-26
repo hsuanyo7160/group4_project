@@ -53,6 +53,7 @@ def main_game():
         player1.update()
         player2.update()
         projectiles_group.update()
+        
         # 更新倒數計時
         countdown_time -= 1 / FPS
         if countdown_time <= 0:
@@ -71,6 +72,13 @@ def main_game():
         # 顯示玩家血量, 能量條, 倒數計時
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
+        
+        ######## draw hitbox ########
+        
+        mask_surface = player1.mask.to_surface(setcolor=(255, 0, 0), unsetcolor=(0, 0, 0, 0))
+        scrn.screen.blit(mask_surface, player1.rect.topleft)
+        mask_surface = player2.mask.to_surface(setcolor=(255, 0, 0), unsetcolor=(0, 0, 0, 0))
+        scrn.screen.blit(mask_surface, player2.rect.topleft)
         
         # 檢查遊戲結束
         if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:

@@ -2,7 +2,6 @@ import pygame
 from ch import character
 from const import *
 from spritesheet import Spritesheet
-
 import time
 
 def scale_image(image, target_height):
@@ -22,6 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.color = color
         self.image = pygame.image.load(character.character_data[index]['icon']) if color == RED else pygame.image.load(character.character_data[index]['icon'])
         self.image = scale_image(self.image, 200)
+        self.mask = pygame.mask.from_surface(self.image)
         self.index = index
         self.sprite_sheet = Spritesheet(character.character_data[index]['idle'], character.character_data[self.index]['idleFrame'])
         self.frame_counter = 0  # 計數器
@@ -230,6 +230,8 @@ class Player(pygame.sprite.Sprite):
         if self.facing_left:
             self.image = pygame.transform.flip(self.image, True, False)
         self.image = scale_image(self.image, 300)
+        self.mask = pygame.mask.from_surface(self.image)
+        
         
         
 
@@ -262,10 +264,10 @@ class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, other_player, damage, direction):
         super().__init__()
         self.image = pygame.image.load('images/character/Archer/Arrow.png')
-        
         self.image = pygame.transform.scale(self.image, (100, 100))
         if direction == -1:
             self.image = pygame.transform.flip(self.image, True, False)
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
@@ -277,12 +279,13 @@ class Projectile(pygame.sprite.Sprite):
     def update(self):
         """Update projectile's position"""
         self.rect.x += self.velocity * self.direction  # Update x position based on direction
-        
         if self.rect.right < 0 or self.rect.left > WIDTH:  # If the projectile goes off the screen
             self.kill()  # Remove the projectile from the game
 
         # Check collision with the target
-        if self.rect.colliderect(self.target.rect):
+        offset = (self.rect.x - self.target.rect.x, self.rect.y - self.target.rect.y)
+        if self.mask.overlap(self.target.mask, offset):
+            print("hit")
             damage = self.damage
             if self.target.defending:
                 damage = self.damage - self.target.defend_strength
@@ -291,7 +294,6 @@ class Projectile(pygame.sprite.Sprite):
             self.target.health -= damage  # Apply damage
             self.kill() 
             
-    def draw(self, screen):
-        # Draw player image on screen
+    def draw(self, screen): 
         screen.blit(self.image, self.rect)
 
