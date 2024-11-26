@@ -112,14 +112,16 @@ class Player(pygame.sprite.Sprite):
             
         if(self.defending == False):
             if keys[self.left]:
-                self.changeStatus(WALK)
+                if self.jumping == False:
+                    self.changeStatus(WALK)
                 self.rect.x -= self.velocity
                 moved = True
                 if not self.facing_left:  # Only flip if direction has changed
                     self.facing_left = True
                     self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
             if keys[self.right]:
-                self.changeStatus(WALK)
+                if self.jumping == False:
+                    self.changeStatus(WALK)
                 self.rect.x += self.velocity
                 moved = True
                 if self.facing_left:  # Only flip if direction has changed
@@ -134,7 +136,7 @@ class Player(pygame.sprite.Sprite):
                 self.changeStatus(JUMP)
                 self.jump_count += 1
                 self.last_jump_time = current_time  # Update last jump time
-        if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False:
+        if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False:
             self.changeStatus(IDLE)
 
         # 更新能量
@@ -224,12 +226,12 @@ class Player(pygame.sprite.Sprite):
             ## deal lots of damage
     
     def draw(self, screen):
-        # Draw player image on screen
         self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
         if self.facing_left:
             self.image = pygame.transform.flip(self.image, True, False)
-        self.image = scale_image(self.image, 400)
-        screen.blit(self.image, self.rect)
+        self.image = scale_image(self.image, 300)
+        
+        
 
     def changeStatus(self, status):
         if self.status != status:
@@ -237,10 +239,11 @@ class Player(pygame.sprite.Sprite):
         self.status = status
         if status == IDLE:
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['idle'], character.character_data[self.index]['idleFrame'])
+        elif status == JUMP:
+            self.frame_rate  = 8
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['jump'], character.character_data[self.index]['jumpFrame'])    
         elif status == WALK:
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
-        elif status == JUMP:
-            self.sprite_sheet = Spritesheet(character.character_data[self.index]['jump'], character.character_data[self.index]['jumpFrame'])
         elif status == ATTACK1:
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
         
@@ -250,7 +253,7 @@ class Player(pygame.sprite.Sprite):
         if self.frame_counter >= self.frame_rate:
             self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
             self.frame_counter = 0  # 重置計數器
- 
+
  ## range attack for commander and samurai
  ## samurai: lower dmg but slow enemy
  ## commander: add spd

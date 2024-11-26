@@ -28,8 +28,8 @@ def main_game():
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
     
     # 初始化玩家位置
-    player1_x, player1_y = 100, HEIGHT - 820
-    player2_x, player2_y = WIDTH - 200, HEIGHT - 820
+    player1_x, player1_y = 100, HEIGHT - 520
+    player2_x, player2_y = WIDTH - 200, HEIGHT - 520
 
     # 初始化玩家
     player1 = Player(RED, player1_x, player1_y, playerlist[0])
@@ -60,33 +60,6 @@ def main_game():
         minutes = int(countdown_time // 60)
         seconds = int(countdown_time % 60)
         countdown_text = font.render(f'Time: {minutes:02}:{seconds:02}', True, BLACK)
-        
-        '''
-        # 玩家攻擊判斷
-        current_time = pygame.time.get_ticks() / 1000
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_f]:
-            player1.attack(player2, current_time)
-        if keys[pygame.K_SLASH]:
-            player2.attack(player1, current_time)
-            
-        # range attack
-        current_time = pygame.time.get_ticks() / 1000
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_g]:
-            player1.range_attack(player2, current_time, projectiles_group)  
-        if keys[pygame.K_PERIOD]:
-            player2.range_attack(player1, current_time, projectiles_group) 
-        
-        # 強力攻擊
-        if keys[pygame.K_h] and player1.energy >= ENERGY_FULL:
-            player1.attack(player2, current_time, powerful=True)
-            player1.energy = 0
-        if keys[pygame.K_COMMA] and player2.energy >= ENERGY_FULL:
-            player2.attack(player1, current_time, powerful=True)
-            player2.energy = 0
-        '''
-        
 
         # Blit background image
         scrn.screen.blit(background_image, (0, 0))
