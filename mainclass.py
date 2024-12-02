@@ -76,13 +76,6 @@ def main_game():
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
         
-        ######## draw hitbox ########
-        
-        mask_surface = player1.mask.to_surface(setcolor=(255, 0, 0), unsetcolor=(0, 0, 0, 0))
-        scrn.screen.blit(mask_surface, player1.rect.topleft)
-        mask_surface = player2.mask.to_surface(setcolor=(255, 0, 0), unsetcolor=(0, 0, 0, 0))
-        scrn.screen.blit(mask_surface, player2.rect.topleft)
-        
         # 檢查遊戲結束
         if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:
             winner = "Player 1" if player2.health < player1.health else "Player 2"
