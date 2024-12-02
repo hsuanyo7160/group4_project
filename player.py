@@ -77,7 +77,12 @@ class Player(pygame.sprite.Sprite):
         self.projectiles_group = None
         
     def update(self):
-        self.increaseframe()
+
+        if (self.status == JUMP and self.frame == character.character_data[self.index]['jumpFrame'] - 1)\
+            or (self.status == ATTACK1 and self.frame == character.character_data[self.index]['attack1Frame'] - 1):
+            self.changeStatus(IDLE)
+        else:
+            self.increaseframe()
         # print(self.frame)
         # 使顯示的血量和能量逐漸逼近實際值
         health_change_speed = 1  # 控制血量變化速度
@@ -145,7 +150,8 @@ class Player(pygame.sprite.Sprite):
                     self.changeStatus(JUMP)
                     self.jump_count += 1
                     self.last_jump_time = current_time  # Update last jump time
-            if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False:
+            
+            if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False and keys[self.atk_key] == False and keys[self.range_atk_key] == False and keys[self.special_key] == False:
                 self.changeStatus(IDLE)
 
             # 更新能量
@@ -179,19 +185,23 @@ class Player(pygame.sprite.Sprite):
         # attack kits
         if keys[self.atk_key]:
             self.attack(self.other_player)
+            self.movelimittime = 15 # 0.25s can't move, run animation
         if keys[self.range_atk_key]:
             self.range_attack(self.other_player, self.projectiles_group)
         if keys[self.special_key]:
             self.special_attack(self.other_player)    
         if keys[self.energy_atk_key]:
             self.attack(self.other_player, powerful=True)
+        #self.draw(None)
             
     def attack(self, other_player, powerful=False):
+        
         # global player1_attack_time, player2_attack_time
 
         # if self.color == RED and current_time - self.attack_time > ATTACK_COOLDOWN: # player1_attack_time >= ATTACK_COOLDOWN:
         if(self.atk_timer > ATTACK_COOLDOWN and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
             #player1_attack_time = current_time
+            self.changeStatus(ATTACK1)
             self.atk_timer = 0
             self.common_timer = 0
             if abs(self.rect.x - other_player.rect.x) < self.attack_range:
@@ -253,25 +263,31 @@ class Player(pygame.sprite.Sprite):
         
 
     def changeStatus(self, status):
-        if self.status != status:
+        if self.status != status or status == JUMP or (status == ATTACK1 and self.frame == character.character_data[self.index]['attack1Frame'] - 1):
             self.frame = 0
         self.status = status
         if status == IDLE:
+            self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['idle'], character.character_data[self.index]['idleFrame'])
         elif status == JUMP:
             self.frame_rate  = 8
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['jump'], character.character_data[self.index]['jumpFrame'])    
         elif status == WALK:
+            self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
         elif status == ATTACK1:
+            if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
+                self.frame_rate = 7
+            else: # Archer
+                self.frame_rate = 2
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
         
     def increaseframe(self):
         """增加動畫幀，根據 frame_rate 決定是否更新"""
         self.frame_counter += 1
         if self.frame_counter >= self.frame_rate:
-            self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
-            self.frame_counter = 0  # 重置計數器
+                self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
+                self.frame_counter = 0  # 重置計數器
 
  ## range attack for commander and samurai
  ## samurai: lower dmg but slow enemy
