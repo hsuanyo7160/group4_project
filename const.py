@@ -1,5 +1,7 @@
 # 設定遊戲畫面
 WIDTH, HEIGHT = 1200, 600
+# 字體
+FONT = "font/Modak-Regular.ttf"
 # 顏色設置
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)

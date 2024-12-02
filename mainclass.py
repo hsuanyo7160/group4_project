@@ -24,7 +24,7 @@ def main_game():
     # 選擇地圖
     map_choice = scrn.choose_map()
     # 倒數計時
-    countdown_time = 180
+    countdown_time = 185
     font = pygame.font.SysFont('Arial', 36)
     # 載入背景圖像
     background_image = pygame.image.load(f'images/background/{map_choice}')
@@ -32,7 +32,7 @@ def main_game():
     
     # 初始化玩家位置
     player1_x, player1_y = 100, HEIGHT - 520
-    player2_x, player2_y = WIDTH - 200, HEIGHT - 520
+    player2_x, player2_y = WIDTH - 400, HEIGHT - 520
 
     # 初始化玩家
     player1 = Player(RED, player1_x, player1_y, playerlist[0])
@@ -53,9 +53,10 @@ def main_game():
             if event.type == pygame.QUIT:
                 running = False
 
-        player1.update()
-        player2.update()
-        projectiles_group.update()
+        if countdown_time > 0 and countdown_time < 180:
+            player1.update()
+            player2.update()
+            projectiles_group.update()
         
         # 更新倒數計時
         countdown_time -= 1 / FPS
@@ -73,6 +74,9 @@ def main_game():
         player1.draw(scrn.screen)
         player2.draw(scrn.screen)
         # 顯示玩家血量, 能量條, 倒數計時
+        if countdown_time > 180:
+            scrn.show_ready_countdown(countdown_time)
+
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
         
