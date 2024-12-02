@@ -50,6 +50,8 @@ class Player(pygame.sprite.Sprite):
         self.atkbufftime = 0
         self.guardtime = 0
         self.waitdash = False
+        self.dashing = False
+        self.dashtime = 0
         # timer
         self.atk_timer = 0
         self.range_atk_timer = 0
@@ -108,7 +110,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         moved = False
         self.defending = False
-        
+        canmove = True
         # Buff 
         if self.atkbufftime > 0:
             self.atkbufftime -= 1
@@ -116,9 +118,22 @@ class Player(pygame.sprite.Sprite):
                 self.attack_damage = 5
                 self.velocity = 5
         
+        if self.dashtime > 0:
+            
+            canmove = False
+            self.dashtime -= 1
+            print(self.rect.x)
+            self.rect.x += 10 if self.facing_left else -10
+            if self.dashtime <= 0:
+                self.dashtime = 0
         
-        canmove = True
         # Guard and move limit
+        if self.waitdash:
+            self.changeStatus(ATTACK1)
+            canmove = False
+            self.waitdash = False
+            self.dashtime = 30
+        # Guard    
         if self.guardtime > 0:
             canmove = False
             self.guardtime -= 1
