@@ -15,13 +15,13 @@ class character:
             "idle": "images/character/Archer/Idle.png",
             "walk": "images/character/Archer/Run.png",
             "jump": "images/character/Archer/Jump.png",
-            "attack1": "images/character/Archer/Attack_1.png",
-            "shoot": "images/character/Archer/Shot.png",
+            #"attack1": "images/character/Archer/Attack_1.png",
+            "attack1": "images/character/Archer/Shot.png",
             "idleFrame": 9,
             "walkFrame": 8,
             "jumpFrame": 9,
-            "attack1Frame": 5,
-            "shootFrame": 14,
+            "attack1Frame": 14,
+            #"shootFrame": 14,
             
         },
         {

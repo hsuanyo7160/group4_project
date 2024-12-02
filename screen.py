@@ -1,4 +1,5 @@
 import pygame
+import math
 import sys
 from player import scale_image
 from const import *
@@ -20,8 +21,8 @@ class Screen:
     # 顯示 "遊戲結束" 畫面
     def show_game_over(self, winner):
         # First text (game over message)
-        font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
-        font = pygame.font.Font(font_path, 48)
+        # font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
+        font = pygame.font.Font(FONT, 48)
         text = font.render(f"Game Over!  {winner} Wins!", True, RED)
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))  # Center the text
         self.screen.blit(text, text_rect)
@@ -63,22 +64,51 @@ class Screen:
 
     def show_main_menu(self):
         # 加載字體
-        font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
-        font = pygame.font.Font(font_path, 108)  # 字體大小
-        title = font.render('2D Battle Game', True, BLACK)
-        font = pygame.font.Font(font_path, 48) 
-        start_button = font.render('Start Game', True, WHITE)
-        quit_button = font.render('Quit', True, WHITE)
+        # font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
+        font_108 = pygame.font.Font(FONT, 108)  # 字體大小
+        font_52 = pygame.font.Font(FONT, 52) 
+        font_48 = pygame.font.Font(FONT, 48) 
         
         # 載入背景圖像
         menu_image = pygame.image.load('images/background/b2.png')
         menu_image = pygame.transform.scale(menu_image, (WIDTH, HEIGHT))
-        self.screen.blit(menu_image, (0, 0))
-        self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 200))
-        self.screen.blit(start_button, (WIDTH // 2 - start_button.get_width() // 2, HEIGHT // 2))
-        self.screen.blit(quit_button, (WIDTH // 2 - quit_button.get_width() // 2, HEIGHT // 2 + 60))
         
-        pygame.display.update()   
+        running = True
+
+        while (running):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            
+            # 加載文字
+            title = font_108.render('2D Battle Game', True, BLACK)
+            start_button = font_48.render('Start Game', True, WHITE)
+            quit_button = font_48.render('Quit', True, WHITE)
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if HEIGHT // 2 <= mouse_y <= HEIGHT // 2 + 40 and WIDTH // 2 - 150 <= mouse_x <= WIDTH // 2 + 150:
+                start_button = font_52.render('Start Game', True, RED)
+                if pygame.mouse.get_pressed()[0]:
+                    return True
+
+            if HEIGHT // 2 + 60 <= mouse_y <= HEIGHT // 2 + 100 and WIDTH // 2 - 100 <= mouse_x <= WIDTH // 2 + 100:
+                quit_button = font_52.render('Quit', True, RED)
+                if pygame.mouse.get_pressed()[0]:
+                    pygame.quit()
+                    sys.exit()
+                    return False
+
+            self.screen.blit(menu_image, (0, 0))
+            self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 200))
+            self.screen.blit(start_button, (WIDTH // 2 - start_button.get_width() // 2, HEIGHT // 2))
+            self.screen.blit(quit_button, (WIDTH // 2 - quit_button.get_width() // 2, HEIGHT // 2 + 60))
+        
+            pygame.display.update()
+            self.clock.tick(FPS)
+        
+        pygame.quit()
+        sys.exit()
+        
     def choose_map(self):
         """Function to display the map selection screen with mouse-based selection and preview."""
         running = True
@@ -224,4 +254,12 @@ class Screen:
 
         pygame.quit()
         sys.exit()
+    
+    def show_ready_countdown(self, countdown_time):
+        # 倒數計時文字
+        countdown_time = math.ceil(countdown_time) - 181
+        font = pygame.font.SysFont('Arial', 48)
+        texts = ["Start!", "1", "2", "3", "Ready"]
+        countdown_text = font.render(texts[countdown_time], True, WHITE)
+        self.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, HEIGHT // 2 - countdown_text.get_height() // 2))
 
