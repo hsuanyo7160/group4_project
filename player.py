@@ -283,7 +283,7 @@ class Projectile(pygame.sprite.Sprite):
             self.kill()  # Remove the projectile from the game
 
         # Check collision with the target
-        offset = (self.rect.x - self.target.rect.x, self.rect.y - self.target.rect.y)
+        offset = (self.target.rect.x - self.rect.x, self.target.rect.y - self.rect.y)
         if self.mask.overlap(self.target.mask, offset):
             print("hit")
             damage = self.damage
