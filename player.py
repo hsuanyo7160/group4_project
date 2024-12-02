@@ -45,6 +45,8 @@ class Player(pygame.sprite.Sprite):
         self.facing_left = False
         self.attack_time = 0
         self.range_attack_time = 0
+        self.movelimit = False
+        self.movelimittime = 0
         # timer
         self.atk_timer = 0
         self.range_atk_timer = 0
@@ -69,6 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.atk_key = pygame.K_f if color == RED else pygame.K_SLASH
         self.range_atk_key = pygame.K_g if color == RED else pygame.K_PERIOD
         self.special_key = pygame.K_h if color == RED else pygame.K_COMMA
+        self.energy_atk_key = pygame.K_j if color == RED else pygame.K_m
         # player binding
         self.other_player = None
         #group binding
@@ -103,49 +106,55 @@ class Player(pygame.sprite.Sprite):
         moved = False
         self.defending = False
         
-        # If you're in the air and press down, you will fall faster
-        if keys[self.down] and self.jumping:
-            self.y_velocity = MAX_FALL_SPEED
-        # If you're on the ground and press down, you will defend
-        elif keys[self.down]:
-            self.defending = True
-            
-        if(self.defending == False):
-            if keys[self.left]:
-                if self.jumping == False:
-                    self.changeStatus(WALK)
-                if self.mask.centroid()[0]+self.rect.x > BORDER[0]:
-                    self.rect.x -= self.velocity
-                moved = True
-                if not self.facing_left:  # Only flip if direction has changed
-                    self.facing_left = True
-                    self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
-            if keys[self.right]:
-                if self.jumping == False:
-                    self.changeStatus(WALK)
-                if self.mask.centroid()[0]+self.rect.x < BORDER[1]:
-                    self.rect.x += self.velocity
-                moved = True
-                if self.facing_left:  # Only flip if direction has changed
-                    self.facing_left = False
-                    self.image = self.image
-                    self.image = pygame.transform.flip(self.image, True, False)
-                # Jump logic with 0.5 second delay after last jump
-            current_time = pygame.time.get_ticks()  # Get current time in milliseconds
-            if keys[self.up] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
-                self.y_velocity = JUMP_STRENGTH
-                self.jumping = True
-                self.changeStatus(JUMP)
-                self.jump_count += 1
-                self.last_jump_time = current_time  # Update last jump time
-        if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False:
-            self.changeStatus(IDLE)
+        if self.movelimit:
+            self.movelimittime -= 1
+            if self.movelimittime <= 0:
+                self.movelimittime = 0
+                self.movelimit = False
+        else:
+            # If you're in the air and press down, you will fall faster
+            if keys[self.down] and self.jumping:
+                self.y_velocity = MAX_FALL_SPEED
+            # If you're on the ground and press down, you will defend
+            elif keys[self.down]:
+                self.defending = True
+                
+            if(self.defending == False):
+                if keys[self.left]:
+                    if self.jumping == False:
+                        self.changeStatus(WALK)
+                    if self.mask.centroid()[0]+self.rect.x > BORDER[0]:
+                        self.rect.x -= self.velocity
+                    moved = True
+                    if not self.facing_left:  # Only flip if direction has changed
+                        self.facing_left = True
+                        self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
+                if keys[self.right]:
+                    if self.jumping == False:
+                        self.changeStatus(WALK)
+                    if self.mask.centroid()[0]+self.rect.x < BORDER[1]:
+                        self.rect.x += self.velocity
+                    moved = True
+                    if self.facing_left:  # Only flip if direction has changed
+                        self.facing_left = False
+                        self.image = self.image
+                        self.image = pygame.transform.flip(self.image, True, False)
+                    # Jump logic with 0.5 second delay after last jump
+                current_time = pygame.time.get_ticks()  # Get current time in milliseconds
+                if keys[self.up] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
+                    self.y_velocity = JUMP_STRENGTH
+                    self.jumping = True
+                    self.changeStatus(JUMP)
+                    self.jump_count += 1
+                    self.last_jump_time = current_time  # Update last jump time
+            if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False:
+                self.changeStatus(IDLE)
 
-        # 更新能量
-        if moved:
-            self.energy += self.energy_gain_per_move
-            if self.energy > ENERGY_FULL:
-                self.energy = ENERGY_FULL
+            # 更新能量
+            if moved:
+                self.energy += self.energy_gain_per_move
+                if self.energy > ENERGY_FULL:
+                    self.energy = ENERGY_FULL
 
         # Gravity
         if self.jumping:
@@ -175,10 +184,9 @@ class Player(pygame.sprite.Sprite):
         if keys[self.range_atk_key]:
             self.range_attack(self.other_player, self.projectiles_group)
         if keys[self.special_key]:
+            self.special_attack(self.other_player)    
+        if keys[self.energy_atk_key]:
             self.attack(self.other_player, powerful=True)
-        # if keys[self.special_key]:
-        #     self.special_attack(self.other_player)
-        
             
     def attack(self, other_player, powerful=False):
         # global player1_attack_time, player2_attack_time
@@ -189,11 +197,13 @@ class Player(pygame.sprite.Sprite):
             self.atk_timer = 0
             self.common_timer = 0
             if abs(self.rect.x - other_player.rect.x) < self.attack_range:
-                damage = self.attack_damage_powerful if powerful else self.attack_damage
+                damage = self.attack_damage_powerful if powerful and self.energy == 100 else self.attack_damage
                 if other_player.defending:
                     damage -= other_player.defend_strength
                     if damage < 0:
                         damage = 0
+                if powerful:
+                    self.energy = 0
                 other_player.health -= damage
                 
     def range_attack(self, other_player, projectiles_group):
@@ -207,8 +217,9 @@ class Player(pygame.sprite.Sprite):
             projectiles_group.add(projectile)
     
     def special_attack(self, other_player):
-        if(self.energy < 30):
+        if(self.atk_timer < ATTACK_COOLDOWN or self.energy < 30):
             return None
+        self.atk_timer = 0
         if self.index == 0:
             None
             ## wait for next input
@@ -222,10 +233,15 @@ class Player(pygame.sprite.Sprite):
             
             ## if health drop -> restore to original health, stunned enemy for 2s, spd atk up for 5s
         elif self.index == 2:
-            None
             ## teleport to enemy side and start shyuli
-            
+            self.rect.x = other_player.rect.x
+            self.rect.y = other_player.rect.y
+            self.movelimit = True
+            self.movelimittime = 60
             ## deal lots of damage
+            #other_player.health -= 20
+            
+        self.energy -= 30
     
     def draw(self, screen):
         self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
