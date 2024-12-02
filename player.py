@@ -45,7 +45,6 @@ class Player(pygame.sprite.Sprite):
         self.facing_left = False
         self.attack_time = 0
         self.range_attack_time = 0
-        self.movelimit = False
         self.movelimittime = 0
         # timer
         self.atk_timer = 0
@@ -106,11 +105,10 @@ class Player(pygame.sprite.Sprite):
         moved = False
         self.defending = False
         
-        if self.movelimit:
+        if self.movelimittime > 0:
             self.movelimittime -= 1
             if self.movelimittime <= 0:
                 self.movelimittime = 0
-                self.movelimit = False
         else:
             # If you're in the air and press down, you will fall faster
             if keys[self.down] and self.jumping:
@@ -230,16 +228,17 @@ class Player(pygame.sprite.Sprite):
         elif self.index == 1:
             None
             ## cant move and animation
-            
+            self.prehealth = self.health
+            self.guardtime = 30
             ## if health drop -> restore to original health, stunned enemy for 2s, spd atk up for 5s
+
         elif self.index == 2:
             ## teleport to enemy side and start shyuli
             self.rect.x = other_player.rect.x
             self.rect.y = other_player.rect.y
-            self.movelimit = True
             self.movelimittime = 60
             ## deal lots of damage
-            #other_player.health -= 20
+            other_player.health -= 10
             
         self.energy -= 30
     
