@@ -46,6 +46,9 @@ class Player(pygame.sprite.Sprite):
         self.attack_time = 0
         self.range_attack_time = 0
         self.movelimittime = 0
+        self.prehealth = self.health
+        self.atkbufftime = 0
+        self.guardtime = 0
         # timer
         self.atk_timer = 0
         self.range_atk_timer = 0
@@ -61,7 +64,6 @@ class Player(pygame.sprite.Sprite):
         self.defend_strength = character.character_data[index]['defend_strength']
         self.range_damage = character.character_data[index]['range_damage']
         self.range_cooldown = character.character_data[index]['range_cooldown']
-        
         # Key bindings
         self.left = pygame.K_a if color == RED else pygame.K_LEFT
         self.right = pygame.K_d if color == RED else pygame.K_RIGHT
@@ -105,6 +107,25 @@ class Player(pygame.sprite.Sprite):
         moved = False
         self.defending = False
         
+        # Buff 
+        if self.atkbufftime > 0:
+            self.atkbufftime -= 1
+            if self.atkbufftime <= 0:
+                self.attack_damage = 5
+                self.velocity = 5
+        
+        # Guard and move limit
+        if self.guardtime > 0:
+            self.guardtime -= 1
+            if(self.health < self.prehealth):
+                print("guard")
+                self.health = self.prehealth
+                self.guardtime = 0
+                self.other_player.movelimmitime = 30
+                self.attack_damage = 8
+                self.velocity = 8
+                self.atkbufftime = 300
+
         if self.movelimittime > 0:
             self.movelimittime -= 1
             if self.movelimittime <= 0:
@@ -195,7 +216,7 @@ class Player(pygame.sprite.Sprite):
             self.atk_timer = 0
             self.common_timer = 0
             if abs(self.rect.x - other_player.rect.x) < self.attack_range:
-                damage = self.attack_damage_powerful if powerful and self.energy == 100 else self.attack_damage
+                damage = self.attack_damage_powerful if (powerful and self.energy == 100) else self.attack_damage
                 if other_player.defending:
                     damage -= other_player.defend_strength
                     if damage < 0:
@@ -222,11 +243,13 @@ class Player(pygame.sprite.Sprite):
             None
             ## wait for next input
             
+                
             ## increase speed of that input(dash)
             
-            ## deal damage, add progectile , energy -30 and animation 
+            ## deal damage, add progectile , energy -30 and animation
+            
+            
         elif self.index == 1:
-            None
             ## cant move and animation
             self.prehealth = self.health
             self.guardtime = 30
