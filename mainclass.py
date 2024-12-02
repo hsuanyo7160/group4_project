@@ -79,6 +79,8 @@ def main_game():
 
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
+        ### print mask hitbox ###
+        
         
         # 檢查遊戲結束
         if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:

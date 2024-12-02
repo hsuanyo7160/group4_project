@@ -27,7 +27,6 @@ class Player(pygame.sprite.Sprite):
         self.frame_counter = 0  # 計數器
         self.frame_rate = 10    # 幀速率，每 10 幀更新一次動畫幀
         self.frame = 0
-        self.delayoneframe = False
         ############ Need to Optimize##############
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -50,6 +49,7 @@ class Player(pygame.sprite.Sprite):
         self.prehealth = self.health
         self.atkbufftime = 0
         self.guardtime = 0
+        self.waitdash = False
         # timer
         self.atk_timer = 0
         self.range_atk_timer = 0
@@ -116,8 +116,11 @@ class Player(pygame.sprite.Sprite):
                 self.attack_damage = 5
                 self.velocity = 5
         
+        
+        canmove = True
         # Guard and move limit
         if self.guardtime > 0:
+            canmove = False
             self.guardtime -= 1
             if(self.health < self.prehealth):
                 print("guard")
@@ -129,10 +132,11 @@ class Player(pygame.sprite.Sprite):
                 self.atkbufftime = 300
 
         if self.movelimittime > 0:
+            canmove = False
             self.movelimittime -= 1
             if self.movelimittime <= 0:
                 self.movelimittime = 0
-        else:
+        if canmove:
             # If you're in the air and press down, you will fall faster
             if keys[self.down] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
@@ -169,8 +173,7 @@ class Player(pygame.sprite.Sprite):
                     self.jump_count += 1
                     self.last_jump_time = current_time  # Update last jump time
             
-            if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False \
-                and self.jumping == False and keys[self.atk_key] == False and keys[self.range_atk_key] == False and keys[self.special_key] == False:
+            if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False and keys[self.atk_key] == False and keys[self.range_atk_key] == False and keys[self.special_key] == False:
                 self.changeStatus(IDLE)
 
             # 更新能量
@@ -204,7 +207,7 @@ class Player(pygame.sprite.Sprite):
         # attack kits
         if keys[self.atk_key]:
             self.attack(self.other_player)
-            self.movelimittime = 30 # 0.5s can't move, run animation
+            self.movelimittime = 15 # 0.25s can't move, run animation
         if keys[self.range_atk_key]:
             self.range_attack(self.other_player, self.projectiles_group)
         if keys[self.special_key]:
@@ -212,13 +215,6 @@ class Player(pygame.sprite.Sprite):
         if keys[self.energy_atk_key]:
             self.attack(self.other_player, powerful=True)
         #self.draw(None)
-        # if (self.status == JUMP and self.frame == character.character_data[self.index]['jumpFrame'] - 1)\
-        #     or (self.status == ATTACK1 and self.frame == character.character_data[self.index]['attack1Frame'] - 1):
-        #     if self.delayoneframe: self.changeStatus(IDLE)
-        #     self.delayoneframe = True
-        #     pass
-        # else:
-        #     self.increaseframe()
             
     def attack(self, other_player, powerful=False):
         
@@ -230,7 +226,9 @@ class Player(pygame.sprite.Sprite):
             self.changeStatus(ATTACK1)
             self.atk_timer = 0
             self.common_timer = 0
-            if abs(self.rect.x - other_player.rect.x) < self.attack_range:
+            offset = (other_player.rect.x - self.rect.x, other_player.rect.y - self.rect.y)
+            if self.mask.overlap(other_player.mask, offset):
+            #if abs(self.rect.x - other_player.rect.x) < self.attack_range:
                 damage = self.attack_damage_powerful if (powerful and self.energy == 100) else self.attack_damage
                 if other_player.defending:
                     damage -= other_player.defend_strength
@@ -255,8 +253,8 @@ class Player(pygame.sprite.Sprite):
             return None
         self.atk_timer = 0
         if self.index == 0:
-            None
             ## wait for next input
+            self.waitdash = True
             
                 
             ## increase speed of that input(dash)
@@ -267,7 +265,7 @@ class Player(pygame.sprite.Sprite):
         elif self.index == 1:
             ## cant move and animation
             self.prehealth = self.health
-            self.guardtime = 30
+            self.guardtime = 60
             ## if health drop -> restore to original health, stunned enemy for 2s, spd atk up for 5s
 
         elif self.index == 2:
@@ -305,7 +303,7 @@ class Player(pygame.sprite.Sprite):
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
         elif status == ATTACK1:
             if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
-                self.frame_rate = 6
+                self.frame_rate = 7
             else: # Archer
                 self.frame_rate = 2
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
@@ -327,8 +325,6 @@ class Player(pygame.sprite.Sprite):
                 # 如果不在特殊狀態，或動畫可以循環
             self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
             self.frame_counter = 0  # 重置計數器
-
-
 
  ## range attack for commander and samurai
  ## samurai: lower dmg but slow enemy
