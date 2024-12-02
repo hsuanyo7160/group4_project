@@ -22,3 +22,5 @@ IDLE = 0
 WALK = 1
 JUMP = 2
 ATTACK1 = 3
+# 邊界
+BORDER = (0, WIDTH)

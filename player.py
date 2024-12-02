@@ -114,7 +114,8 @@ class Player(pygame.sprite.Sprite):
             if keys[self.left]:
                 if self.jumping == False:
                     self.changeStatus(WALK)
-                self.rect.x -= self.velocity
+                if self.mask.centroid()[0]+self.rect.x > BORDER[0]:
+                    self.rect.x -= self.velocity
                 moved = True
                 if not self.facing_left:  # Only flip if direction has changed
                     self.facing_left = True
@@ -122,7 +123,8 @@ class Player(pygame.sprite.Sprite):
             if keys[self.right]:
                 if self.jumping == False:
                     self.changeStatus(WALK)
-                self.rect.x += self.velocity
+                if self.mask.centroid()[0]+self.rect.x < BORDER[1]:
+                    self.rect.x += self.velocity
                 moved = True
                 if self.facing_left:  # Only flip if direction has changed
                     self.facing_left = False

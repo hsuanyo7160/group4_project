@@ -1,10 +1,9 @@
 
-Fix arrow collide with player
-    i've done mask, but there is a bug 
-
 Add boundary for arena
     Character can't go out the map
     
+    Done. maybe a little offset is needed
+
 Add spritesheet for character
     think which animation is:
         defend
