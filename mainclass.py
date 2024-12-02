@@ -15,6 +15,9 @@ scrn= Screen(WIDTH, HEIGHT)
 # 主遊戲迴圈
 def main_game():
     running = True
+    # show menu
+    if not scrn.show_main_menu():
+        return
     # choose character
     pygame.time.wait(100)
     playerlist = scrn.choose_character()
@@ -102,23 +105,25 @@ def main_game():
     pygame.quit()
     sys.exit()
 
-def menu_loop():
-    menu_running = True
-    while menu_running:
-        scrn.show_main_menu()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                menu_running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                # Start Game
-                if HEIGHT // 2 <= mouse_y <= HEIGHT // 2 + 40 and WIDTH // 2 - 150 <= mouse_x <= WIDTH // 2 + 150:
-                    menu_running = False
-                    main_game()
-                # Quit Game
-                if HEIGHT // 2 + 60 <= mouse_y <= HEIGHT // 2 + 100 and WIDTH // 2 - 100 <= mouse_x <= WIDTH // 2 + 100:
-                    menu_running = False
-                    pygame.quit()
-                    sys.exit()
+# def menu_loop():
+#     menu_running = True
+#     while menu_running:
+#         scrn.show_main_menu()
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 menu_running = False
+#             if event.type == pygame.MOUSEBUTTONDOWN:
+#                 mouse_x, mouse_y = pygame.mouse.get_pos()
+#                 # Start Game
+#                 if HEIGHT // 2 <= mouse_y <= HEIGHT // 2 + 40 and WIDTH // 2 - 150 <= mouse_x <= WIDTH // 2 + 150:
+#                     menu_running = False
+#                     main_game()
+#                 # Quit Game
+#                 if HEIGHT // 2 + 60 <= mouse_y <= HEIGHT // 2 + 100 and WIDTH // 2 - 100 <= mouse_x <= WIDTH // 2 + 100:
+#                     menu_running = False
+#                     pygame.quit()
+#                     sys.exit()
 
-menu_loop()
+#menu_loop()
+
+main_game()
