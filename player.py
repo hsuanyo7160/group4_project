@@ -82,7 +82,10 @@ class Player(pygame.sprite.Sprite):
         self.projectiles_group = None
         
     def update(self):
-
+        if self.status == JUMP:
+            print("jump")
+        if self.status == FALL:
+            print("fall")
         self.increaseframe()
         # print(self.frame)
         # 使顯示的血量和能量逐漸逼近實際值
@@ -155,6 +158,7 @@ class Player(pygame.sprite.Sprite):
             # If you're in the air and press down, you will fall faster
             if keys[self.down] and self.jumping:
                 self.y_velocity = MAX_FALL_SPEED
+                self.changeStatus(KNEEL)
             # If you're on the ground and press down, you will defend
             elif keys[self.down]:
                 self.defending = True
@@ -187,7 +191,8 @@ class Player(pygame.sprite.Sprite):
                     self.changeStatus(JUMP)
                     self.jump_count += 1
                     self.last_jump_time = current_time  # Update last jump time
-            
+            else:
+                self.changeStatus(GAURD)
             if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False and keys[self.atk_key] == False and keys[self.range_atk_key] == False and keys[self.special_key] == False:
                 self.changeStatus(IDLE)
 
@@ -206,8 +211,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.y_velocity
 
         # Check if landed
-        if self.rect.y >= HEIGHT - 220:
-            self.rect.y = HEIGHT - 220
+        if self.rect.y >= HEIGHT - 320:
+            self.rect.y = HEIGHT - 320
             self.jumping = False
             self.y_velocity = 0
             self.jump_count = 0  # Reset jump count when the player lands
@@ -230,6 +235,9 @@ class Player(pygame.sprite.Sprite):
         if keys[self.energy_atk_key]:
             self.attack(self.other_player, powerful=True)
         #self.draw(None)
+        # check falling
+        if self.y_velocity > 0:
+            self.changeStatus(FALL)
             
     def attack(self, other_player, powerful=False):
         
@@ -304,32 +312,46 @@ class Player(pygame.sprite.Sprite):
         
 
     def changeStatus(self, status):
-        if self.status != status or status == JUMP or (status == ATTACK1 and self.frame == character.character_data[self.index]['attack1Frame'] - 1):
+        if self.status != status :#or status == JUMP:
             self.frame = 0
+
         self.status = status
+
         if status == IDLE:
             self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['idle'], character.character_data[self.index]['idleFrame'])
         elif status == JUMP:
-            self.frame_rate  = 8
+            self.frame_rate  = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['jump'], character.character_data[self.index]['jumpFrame'])    
         elif status == WALK:
             self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
         elif status == ATTACK1:
             if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
-                self.frame_rate = 7
+                self.frame_rate = 3
             else: # Archer
-                self.frame_rate = 2
+                self.frame_rate = 1
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
-        
+        elif status == GAURD:
+            if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
+                self.frame_rate = 4
+            else: # Archer
+                self.frame_rate = 3
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['protect'], character.character_data[self.index]['protectFrame'])
+        elif status == FALL:
+            self.frame_rate = 10
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['fall'], character.character_data[self.index]['fallFrame'])
+        elif status == KNEEL:
+            self.frame_rate = 10
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['kneel'], character.character_data[self.index]['kneelFrame'])
+    
+    
     def increaseframe(self):
         """增加動畫幀，根據 frame_rate 決定是否更新"""
         self.frame_counter += 1
         if self.frame_counter >= self.frame_rate:
             if self.status == JUMP and self.frame == character.character_data[self.index]['jumpFrame'] - 1:
                 self.frame_counter = 0  # 重置計數器，但不更新幀
-                self.changeStatus(IDLE)
                 return
         
             # 攻擊動畫到最後一幀時不循環
@@ -338,6 +360,10 @@ class Player(pygame.sprite.Sprite):
                 self.changeStatus(IDLE)
                 return
                 # 如果不在特殊狀態，或動畫可以循環
+
+            if self.status == GAURD and self.frame == character.character_data[self.index]['protectFrame'] - 1:
+                self.frame_counter = 0  # 重置計數器，但不更新幀
+                return
             self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
             self.frame_counter = 0  # 重置計數器
 

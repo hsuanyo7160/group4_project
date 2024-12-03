@@ -24,5 +24,8 @@ IDLE = 0
 WALK = 1
 JUMP = 2
 ATTACK1 = 3
+FALL = 4
+GAURD = 5
+KNEEL = 6
 # 邊界
 BORDER = (0, WIDTH)
