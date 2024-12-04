@@ -24,5 +24,7 @@ Howard and Ou:
 ******** Fix hitbox for 2 player *******
     i change it to mask version, but there's a little bug when u attack from enemy' back
 
-
+******** Add image for projectile ********
+    i add velocity_y and rotation for projectile, consider add different projectile for each character
+    also different const for projectile
 

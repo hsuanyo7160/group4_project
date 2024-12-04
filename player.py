@@ -374,23 +374,36 @@ class Player(pygame.sprite.Sprite):
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, other_player, damage, direction):
         super().__init__()
-        self.image = pygame.image.load('images/character/Archer/Arrow.png')
-        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.base_image = pygame.image.load('images/character/Archer/Arrow.png')
+        self.base_image = pygame.transform.scale(self.base_image, (100, 100))
         if direction == -1:
-            self.image = pygame.transform.flip(self.image, True, False)
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect()
+            self.base_image = pygame.transform.flip(self.base_image, True, False)
+        self.mask = pygame.mask.from_surface(self.base_image)
+        self.rect = self.base_image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
-        self.velocity = 10  # Speed of the projectile
+        self.velocity_x = 30  # Speed of the projectile
+        self.velocity_y = -5
         self.direction = direction  # Direction vector (1, 0 for right, -1, 0 for left)
         self.target = other_player
         self.damage = damage
         
     def update(self):
         """Update projectile's position"""
-        self.rect.x += self.velocity * self.direction  # Update x position based on direction
+        self.velocity_y += GRAVITY
+        self.rect.x += self.velocity_x * self.direction  # Update x position based on direction
+        self.rect.y += self.velocity_y
+        # rotate image based on velocity_x and velocity_y
+        angle = 0
+        if self.velocity_x != 0:
+            angle = -self.velocity_y / self.velocity_x * self.direction
+            angle = angle * 180 / 3.14159 # Convert to degrees
+        self.image = pygame.transform.rotate(self.base_image, angle)
+        self.mask = pygame.mask.from_surface(self.image)
+        
         if self.rect.right < 0 or self.rect.left > WIDTH:  # If the projectile goes off the screen
+            self.kill()  # Remove the projectile from the game
+        elif self.rect.top > HEIGHT:
             self.kill()  # Remove the projectile from the game
 
         # Check collision with the target
