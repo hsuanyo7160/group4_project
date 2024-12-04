@@ -29,9 +29,11 @@ class Player(pygame.sprite.Sprite):
         self.frame = 0
         ############ Need to Optimize##############
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.centerx = x
+        self.rect.centery = y
         # Status
+        self.pos_x = x
+        self.pos_y = y
         self.status = IDLE
         self.health = 200
         self.energy = 0
@@ -125,8 +127,8 @@ class Player(pygame.sprite.Sprite):
             
             canmove = False
             self.dashtime -= 1
-            print(self.rect.x)
-            self.rect.x += 10 if self.facing_left else -10
+            print(self.pos_x)
+            self.pos_x += 10 if self.facing_left else -10
             if self.dashtime <= 0:
                 self.dashtime = 0
         
@@ -167,8 +169,8 @@ class Player(pygame.sprite.Sprite):
                 if keys[self.left]:
                     if self.jumping == False:
                         self.changeStatus(WALK)
-                    if self.mask.centroid()[0]+self.rect.x > BORDER[0]:
-                        self.rect.x -= self.velocity
+                    if self.pos_x > BORDER[0]:
+                        self.pos_x -= self.velocity
                     moved = True
                     if not self.facing_left:  # Only flip if direction has changed
                         self.facing_left = True
@@ -176,8 +178,8 @@ class Player(pygame.sprite.Sprite):
                 if keys[self.right]:
                     if self.jumping == False:
                         self.changeStatus(WALK)
-                    if self.mask.centroid()[0]+self.rect.x < BORDER[1]:
-                        self.rect.x += self.velocity
+                    if self.pos_x < BORDER[1]:
+                        self.pos_x += self.velocity
                     moved = True
                     if self.facing_left:  # Only flip if direction has changed
                         self.facing_left = False
@@ -208,11 +210,11 @@ class Player(pygame.sprite.Sprite):
             if self.y_velocity > MAX_FALL_SPEED:
                 self.y_velocity = MAX_FALL_SPEED
 
-        self.rect.y += self.y_velocity
+        self.pos_y += self.y_velocity
 
         # Check if landed
-        if self.rect.y >= HEIGHT - 320:
-            self.rect.y = HEIGHT - 320
+        if self.pos_y >= HEIGHT - 320:
+            self.pos_y = HEIGHT - 320
             self.jumping = False
             self.y_velocity = 0
             self.jump_count = 0  # Reset jump count when the player lands
@@ -249,7 +251,7 @@ class Player(pygame.sprite.Sprite):
             self.changeStatus(ATTACK1)
             self.atk_timer = 0
             self.common_timer = 0
-            offset = (other_player.rect.x - self.rect.x, other_player.rect.y - self.rect.y)
+            offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
             if self.mask.overlap(other_player.mask, offset):
             #if abs(self.rect.x - other_player.rect.x) < self.attack_range:
                 damage = self.attack_damage_powerful if (powerful and self.energy == 100) else self.attack_damage
@@ -268,7 +270,7 @@ class Player(pygame.sprite.Sprite):
             self.range_atk_timer = 0
             self.common_timer = 0
             direction = -1 if self.facing_left else 1
-            projectile = Projectile(self.rect.centerx, self.rect.centery, other_player, self.range_damage, direction)
+            projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction)
             projectiles_group.add(projectile)
     
     def special_attack(self, other_player):
@@ -293,19 +295,22 @@ class Player(pygame.sprite.Sprite):
 
         elif self.index == 2:
             ## teleport to enemy side and start shyuli
-            self.rect.x = other_player.rect.x
-            self.rect.y = other_player.rect.y
+            self.pos_x = other_player.pos_x
+            self.pos_y = other_player.pos_y
             self.movelimittime = 60
             ## deal lots of damage
             other_player.health -= 10
             
         self.energy -= 30
     
-    def draw(self, screen):
+    def draw(self, screen, zoom=1, offset=(0, 0)):
         self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
         if self.facing_left:
             self.image = pygame.transform.flip(self.image, True, False)
-        self.image = scale_image(self.image, 300)
+        self.image = scale_image(self.image, 300 * zoom)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = self.pos_x + offset[0]
+        self.rect.centery = self.pos_y + offset[1]
         self.mask = pygame.mask.from_surface(self.image)
         
         

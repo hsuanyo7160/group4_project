@@ -31,8 +31,8 @@ def main_game():
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
     
     # 初始化玩家位置
-    player1_x, player1_y = 100, HEIGHT - 520
-    player2_x, player2_y = WIDTH - 400, HEIGHT - 520
+    player1_x, player1_y = 100, HEIGHT - 420
+    player2_x, player2_y = WIDTH - 400, HEIGHT - 420
 
     # 初始化玩家
     player1 = Player(RED, player1_x, player1_y, playerlist[0])
