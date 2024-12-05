@@ -28,4 +28,4 @@ FALL = 4
 GAURD = 5
 KNEEL = 6
 # 邊界
-BORDER = (0, WIDTH)
+BORDER = (-500, 1700)
