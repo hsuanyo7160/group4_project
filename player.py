@@ -213,8 +213,8 @@ class Player(pygame.sprite.Sprite):
         self.pos_y += self.y_velocity
 
         # Check if landed
-        if self.pos_y >= HEIGHT - 320:
-            self.pos_y = HEIGHT - 320
+        if self.pos_y >= HEIGHT - 420:
+            self.pos_y = HEIGHT - 420
             self.jumping = False
             self.y_velocity = 0
             self.jump_count = 0  # Reset jump count when the player lands
@@ -430,8 +430,8 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.centerx = self.pos_x - camera_pos[0] + 600
         self.rect.centery = self.pos_y - camera_pos[1] + 300
 
-        print(self.rect)
-        print(self.target.rect)
+        # print(self.rect)
+        # print(self.target.rect)
         
         # Check collision with the target
         offset = (self.target.rect.x - self.rect.x, self.target.rect.y - self.rect.y)

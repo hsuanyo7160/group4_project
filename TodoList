@@ -28,3 +28,6 @@ Howard and Ou:
     i add velocity_y and rotation for projectile, consider add different projectile for each character
     also different const for projectile
 
+******** Done for dynamic camera ********
+    Some, or lots of, bugs to be fixed
+
