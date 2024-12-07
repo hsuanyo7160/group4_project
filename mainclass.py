@@ -49,11 +49,14 @@ def main_game():
     player2.projectiles_group = projectiles_group
 
     while running:
+        keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
         if countdown_time > 0 and countdown_time < 180:
+            player1.handleinput(keys)
+            player2.handleinput(keys)
             player1.update()
             player2.update()
             projectiles_group.update()

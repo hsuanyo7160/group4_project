@@ -1,3 +1,4 @@
+
 # 設定遊戲畫面
 WIDTH, HEIGHT = 1200, 600
 # 字體
@@ -23,9 +24,12 @@ ENERGY_FULL = 100
 IDLE = 0
 WALK = 1
 JUMP = 2
-ATTACK1 = 3
+DEFEND = 3
 FALL = 4
-GAURD = 5
-KNEEL = 6
+KNEEL = 5
+NONE = 6
+ATK = 7
+SPEC_ATK = 8
+RANGE_ATK = 9
 # 邊界
 BORDER = (0, WIDTH)
