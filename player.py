@@ -118,7 +118,7 @@ class Player(pygame.sprite.Sprite):
         # 移動控制和能量增加
         # keys = pygame.key.get_pressed()
         # self.moving = False
-        self.defending = False
+        #self.defending = False
         self.movable = True
         # Buff 
         if self.atkbufftime > 0:
@@ -400,7 +400,9 @@ class Player(pygame.sprite.Sprite):
             elif keys[self.down]:
                 self.defending = True
                 self.changeStatus(DEFEND)
-                
+            # on the ground and not defending
+            if not keys[self.down] and not self.jumping:
+                self.defending = False
             #if(self.defending == False):
             if keys[self.left]:
                 if self.jumping == False and not self.defending:
