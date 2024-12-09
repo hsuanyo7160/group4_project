@@ -228,6 +228,8 @@ class Player(pygame.sprite.Sprite):
         if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
             if self.bleed > 0:
                 self.health -= 5
+            self.changeStatus(RANGE_ATK)
+            self.attacking = True
             self.range_atk_timer = 0
             self.common_timer = 0
             direction = -1 if self.facing_left else 1
@@ -333,16 +335,18 @@ class Player(pygame.sprite.Sprite):
             self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
         elif status == ATK:
-            if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
-                self.frame_rate = 3
-            else: # Archer
-                self.frame_rate = 1
+            # if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
+            #     self.frame_rate = 3
+            # else: # Archer
+            #     self.frame_rate = 1
+            self.frame_rate = 15 // character.character_data[self.index]['attack1Frame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
         elif status == DEFEND:
-            if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
-                self.frame_rate = 4
-            else: # Archer
-                self.frame_rate = 3
+            # if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
+            #     self.frame_rate = 4
+            # else: # Archer
+            #     self.frame_rate = 3
+            self.frame_rate = 8 // character.character_data[self.index]['protectFrame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['protect'], character.character_data[self.index]['protectFrame'])
         elif status == FALL:
             self.frame_rate = 10
@@ -350,7 +354,9 @@ class Player(pygame.sprite.Sprite):
         elif status == KNEEL:
             self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['kneel'], character.character_data[self.index]['kneelFrame'])
-    
+        elif status == RANGE_ATK:
+            self.frame_rate = 15 // character.character_data[self.index]['attack2Frame']
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack2'], character.character_data[self.index]['attack2Frame'])
     
     def increaseframe(self):
         """增加動畫幀，根據 frame_rate 決定是否更新"""
@@ -358,14 +364,15 @@ class Player(pygame.sprite.Sprite):
         if self.frame_counter >= self.frame_rate:
             if self.status == JUMP and self.frame == character.character_data[self.index]['jumpFrame'] - 1:
                 return
-        
             # 攻擊動畫到最後一幀時不循環
             if self.status == ATK and self.frame == character.character_data[self.index]['attack1Frame'] - 1:
                 self.attacking = False
                 #self.changeStatus(IDLE)
                 return
-
             if self.status == DEFEND and self.frame == character.character_data[self.index]['protectFrame'] - 1:
+                return
+            if self.status == RANGE_ATK and self.frame == character.character_data[self.index]['attack2Frame'] - 1:
+                self.attacking = False
                 return
             self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
             self.frame_counter = 0  # 重置計數器
