@@ -13,6 +13,9 @@ class Screen:
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
         self.all_sprites = pygame.sprite.Group()
+
+        self.health_change_speed = 1  # 控制血量變化速度
+        self.energy_change_speed = 3  # 控制能量變化速度
     def addPlayer(self, p1, p2):
         self.player1 = p1
         self.player2 = p2
@@ -43,9 +46,33 @@ class Screen:
                 int(start_color.b * (1 - ratio) + end_color.b * ratio)
             )
             pygame.draw.line(screen, color, (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
+    
+    def update_displayed_health_energy(self, player, health_change_speed, energy_change_speed):
+        # 使顯示的血量和能量逐漸逼近實際值
+        if player.displayed_health < player.health:
+            player.displayed_health += health_change_speed
+            if player.displayed_health > player.health:
+                player.displayed_health = player.health
+        elif player.displayed_health > player.health:
+            player.displayed_health -= health_change_speed
+            if player.displayed_health < player.health:
+                player.displayed_health = player.health
+
+        if player.displayed_energy < player.energy:
+            player.displayed_energy += energy_change_speed
+            if player.displayed_energy > player.energy:
+                player.displayed_energy = player.energy
+        elif player.displayed_energy > player.energy:
+            player.displayed_energy -= energy_change_speed
+            if player.displayed_energy < player.energy:
+                player.displayed_energy = player.energy
 
         
     def draw_health_energy_bar(self):
+        # 計算玩家血量變化
+        for player in [self.player1, self.player2]:
+            self.update_displayed_health_energy(player, self.health_change_speed, self.energy_change_speed)
+
         # 玩家1的血量條 - 漸層從亮紅到深紅
         self.draw_gradient_bar(self.screen, Color(255, 0, 0), Color(139, 0, 0), pygame.Rect(20, 20, self.player1.displayed_health * 2, 18))
         pygame.draw.rect(self.screen, WHITE, (20, 20, 400, 20), 2)  # 邊框

@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
         
         self.health = 200
         self.energy = 0
-        self.displayed_health = 200
+        self.displayed_health = 0
         self.displayed_energy = 0
         self.defending = False
         self.y_velocity = 0
@@ -96,26 +96,7 @@ class Player(pygame.sprite.Sprite):
         
         self.increaseframe()
         # print(self.frame)
-        # 使顯示的血量和能量逐漸逼近實際值
-        health_change_speed = 1  # 控制血量變化速度
-        energy_change_speed = 3  # 控制能量變化速度
-        if self.displayed_health < self.health:
-            self.displayed_health += health_change_speed
-            if self.displayed_health > self.health:
-                self.displayed_health = self.health
-        elif self.displayed_health > self.health:
-            self.displayed_health -= health_change_speed
-            if self.displayed_health < self.health:
-                self.displayed_health = self.health
-
-        if self.displayed_energy < self.energy:
-            self.displayed_energy += energy_change_speed
-            if self.displayed_energy > self.energy:
-                self.displayed_energy = self.energy
-        elif self.displayed_energy > self.energy:
-            self.displayed_energy -= energy_change_speed
-            if self.displayed_energy < self.energy:
-                self.displayed_energy = self.energy
+        
         
         # 移動控制和能量增加
         # keys = pygame.key.get_pressed()
