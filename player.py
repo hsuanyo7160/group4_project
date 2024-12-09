@@ -58,6 +58,7 @@ class Player(pygame.sprite.Sprite):
         self.movable = True
         self.moving = False
         self.ultbufftime = 0
+        self.bleed = 0
         # action status
         self.status = IDLE
         # attack counter
@@ -121,6 +122,10 @@ class Player(pygame.sprite.Sprite):
         # self.moving = False
         # self.defending = False
         self.movable = True
+        # Debuff
+        if self.bleed > 0:
+            self.bleed -= 1
+            self.other_player.energy = 0
         # Buff 
         if self.atkbufftime > 0:
             self.atkbufftime -= 1
@@ -138,17 +143,26 @@ class Player(pygame.sprite.Sprite):
         if self.ultbufftime > 0:
             self.ultbufftime -= 1
             self.energy = 0
-            if self.ultbufftime <= 0:
-                self.attack_damage = self.attack_damage - 3
-                self.defend_strength = self.defend_strength + 5
-                self.velocity = self.velocity - 3
+            # Archer
+            if self.index == 0:
+                if self.ultbufftime <= 0:
+                    self.range_cooldown = 0.5
+                    self.range_damage = self.range_damage - 3
+                    self.velocity = self.velocity + 2
+            # Samurai
+            elif self.index == 1:
+                if self.ultbufftime <= 0:
+                    self.attack_damage = self.attack_damage - 3
+                    self.defend_strength = self.defend_strength + 5
+                    self.velocity = self.velocity - 3
+            
         
         # Guard and move limit
         if self.waitdash:
             self.changeStatus(ATK)
             self.range_atk_timer = self.range_cooldown + 1
             self.common_timer = ATTACK_COOLDOWN + 1
-            self.range_attack(self.other_player, self.projectiles_group)
+            self.range_attack(self.other_player, self.projectiles_group, "normal")
             self.movable = False
             self.waitdash = False
             self.dashtime = 30
@@ -206,6 +220,8 @@ class Player(pygame.sprite.Sprite):
             
     def attack(self, other_player):
         if(self.atk_timer > ATTACK_COOLDOWN and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
+            if self.bleed > 0:
+                self.health -= 5
             #player1_attack_time = current_time
             self.changeStatus(ATK)
             self.atk_timer = 0
@@ -220,28 +236,30 @@ class Player(pygame.sprite.Sprite):
                         damage = 0
                 other_player.health -= damage
                 
-    def range_attack(self, other_player, projectiles_group):
+    def range_attack(self, other_player, projectiles_group, type):
         """發射遠程攻擊（子彈）"""
         # 創建一個子彈並設定其初始位置和方向
         if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
+            if self.bleed > 0:
+                self.health -= 5
             self.range_atk_timer = 0
             self.common_timer = 0
             direction = -1 if self.facing_left else 1
             projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction, image_path=character.character_data[self.index]['Arrow'],
-                                    scale = character.character_data[self.index]['Arrow_scale'])
+                                    size = character.character_data[self.index]['Arrow_scale'], effect = type)
             projectiles_group.add(projectile)
     
     def special_attack(self, other_player):
         if(self.atk_timer < ATTACK_COOLDOWN or self.energy < 30):
             return None
+        if self.bleed > 0:
+            self.health -= 5
         self.atk_timer = 0
         if self.index == 0:
             ## wait for next input
             self.waitdash = True        
             ## increase speed of that input(dash)
             ## deal damage, add progectile , energy -30 and animation
-            
-            
         elif self.index == 1:
             ## cant move and animation
             self.prehealth = self.health
@@ -258,13 +276,17 @@ class Player(pygame.sprite.Sprite):
             
         self.energy -= 30
     
+    # J attack
     def power_attack(self, other_player):
         if(self.energy < 100):
             return None
-        
+        if self.bleed > 0:
+            self.health -= 5
         if self.index == 0:
-            ## 
-            self.waitdash = True
+            self.ultbufftime = 600
+            self.range_cooldown = 0.2
+            self.range_damage += 3
+            self.velocity -= 2
             
         elif self.index == 1:
             ## Increase Speed, attack, and Decrease defense for 10s
@@ -274,14 +296,16 @@ class Player(pygame.sprite.Sprite):
             self.velocity = self.velocity + 3
 
         elif self.index == 2:
-            ## teleport to enemy side and start shyuli
-            self.pos_x = other_player.pos_x
-            self.pos_y = other_player.pos_y
-            self.movelimittime = 60
-            ## deal lots of damage
-            other_player.health -= 10
+            # normal attack
+            self.changeStatus(ATK)
+            self.atk_timer = 0
+            self.common_timer = 0
+            offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
+            if self.mask.overlap(other_player.mask, offset):
+                # Add bleed effect
+                self.other_player.bleed = 450
             
-        self.energy -= 30
+        self.energy -= 100
     
     def draw(self, screen, camera_pos=(600, 300)): # camera_pos = half of distance between players
         self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
@@ -415,7 +439,10 @@ class Player(pygame.sprite.Sprite):
             self.attack(self.other_player)
             self.movelimittime = 15 # 0.25s can't move, run animation
         if keys[self.range_atk_key]:
-            self.range_attack(self.other_player, self.projectiles_group)
+            if self.ultbufftime > 0 and self.index == 0:
+                self.range_attack(self.other_player, self.projectiles_group, "back")
+            else:
+                self.range_attack(self.other_player, self.projectiles_group, "normal")
         if keys[self.special_key]:
             self.special_attack(self.other_player)    
         if keys[self.energy_atk_key]:
@@ -427,10 +454,10 @@ class Player(pygame.sprite.Sprite):
  ## commander: add spd
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, other_player, damage, direction, image_path, scale):
+    def __init__(self, x, y, other_player, damage, direction, image_path, size, effect):
         super().__init__()
         self.base_image = pygame.image.load(image_path)
-        self.base_image = pygame.transform.scale(self.base_image, (scale,scale))
+        self.base_image = pygame.transform.scale(self.base_image, (size,size))
         if direction == -1:
             self.base_image = pygame.transform.flip(self.base_image, True, False)
         self.mask = pygame.mask.from_surface(self.base_image)
@@ -444,6 +471,7 @@ class Projectile(pygame.sprite.Sprite):
         self.direction = direction  # Direction vector (1, 0 for right, -1, 0 for left)
         self.target = other_player
         self.damage = damage
+        self.effect = effect
         
     def update(self, zoom, camera_pos):
         """Update projectile's position"""
@@ -482,6 +510,9 @@ class Projectile(pygame.sprite.Sprite):
                 if damage < 0:
                     damage = 0
             self.target.health -= damage  # Apply damage
+            if self.effect == "back":
+                backdir = -1 if self.target.rect.x - self.rect.x > 0 else 1
+                self.target.pos_x += 10 * backdir
             self.kill() 
         
             
