@@ -37,9 +37,11 @@ def main_game():
     player1 = Player(RED, player1_x, player1_y, playerlist[0])
     player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
 
+    # 設定玩家對手
     player1.other_player = player2
     player2.other_player = player1
     
+    # 加入玩家到畫面
     scrn.addPlayer(player1, player2)
     
     # 初始化射擊物件群組
@@ -52,8 +54,8 @@ def main_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-        if countdown_time > 0 and countdown_time < 180:
+        
+        if countdown_time > 0 and countdown_time < 180 and player1.health > 0 and player2.health > 0:
             player1.handleinput(keys)
             player2.handleinput(keys)
             player1.update()
@@ -61,9 +63,13 @@ def main_game():
             projectiles_group.update(zoom, camera_pos)
         
         # 更新倒數計時
-        countdown_time -= 1 / FPS
+        if countdown_time > 0 and player1.health > 0 and player2.health > 0:
+            countdown_time -= 1 / FPS
+        # Stop the countdown at 0
         if countdown_time <= 0:
-            countdown_time = 0  # Stop the countdown at 0
+            countdown_time = 0  
+        
+        # 設定倒數計時文字
         minutes = int(countdown_time // 60)
         seconds = int(countdown_time % 60)
         countdown_text = font.render(f'Time: {minutes:02}:{seconds:02}', True, BLACK)
@@ -80,29 +86,41 @@ def main_game():
         # print(camera_pos, player1.pos_x, player2.pos_x)
         # update background
         background.update(zoom, camera_pos)
+
         # 顯示玩家血量, 能量條, 倒數計時
         if countdown_time > 180:
             scrn.show_ready_countdown(countdown_time)
-
         scrn.draw_health_energy_bar()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
+
         ### print mask hitbox ###
         
         
         # 檢查遊戲結束
         if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:
+            # 顯示遊戲結束畫面
             winner = "Player 1" if player2.health < player1.health else "Player 2"
             if(player1.health == player2.health):
                 winner = "Tie"
             scrn.show_game_over(winner)
+
+            # 重新開始遊戲或離開遊戲
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
-                player1.health = player2.health = 100
-                player1.energy = player2.energy = 0
-                player1.rect.x = player1_x
-                player1.rect.y = HEIGHT - 220
-                player2.rect.x = player2_x
-                player2.rect.y = HEIGHT - 220
+                # 重置玩家
+                player1.kill()
+                player2.kill()
+
+                player1 = Player(RED, player1_x, player1_y, playerlist[0])
+                player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
+
+                player1.other_player = player2
+                player2.other_player = player1
+
+                scrn.addPlayer(player1, player2)
+
+                # 重置倒計時
+                countdown_time = 185
             elif keys[pygame.K_q]:
                 running = False
         
