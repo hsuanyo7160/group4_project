@@ -57,6 +57,7 @@ class Player(pygame.sprite.Sprite):
         self.attacking = False
         self.movable = True
         self.moving = False
+        self.ultbufftime = 0
         # action status
         self.status = IDLE
         # attack counter
@@ -118,14 +119,14 @@ class Player(pygame.sprite.Sprite):
         # 移動控制和能量增加
         # keys = pygame.key.get_pressed()
         # self.moving = False
-        #self.defending = False
+        # self.defending = False
         self.movable = True
         # Buff 
         if self.atkbufftime > 0:
             self.atkbufftime -= 1
             if self.atkbufftime <= 0:
-                self.attack_damage = 5
-                self.velocity = 5
+                self.attack_damage = self.attack_damage - 3
+                self.velocity = self.velocity - 3
         
         if self.dashtime > 0:
             self.movable = False
@@ -133,6 +134,14 @@ class Player(pygame.sprite.Sprite):
             self.pos_x += 10 if self.facing_left else -10
             if self.dashtime <= 0:
                 self.dashtime = 0
+                
+        if self.ultbufftime > 0:
+            self.ultbufftime -= 1
+            self.energy = 0
+            if self.ultbufftime <= 0:
+                self.attack_damage = self.attack_damage - 3
+                self.defend_strength = self.defend_strength + 5
+                self.velocity = self.velocity - 3
         
         # Guard and move limit
         if self.waitdash:
@@ -152,8 +161,9 @@ class Player(pygame.sprite.Sprite):
                 self.health = self.prehealth
                 self.guardtime = 0
                 self.other_player.movelimmitime = 30
-                self.attack_damage = 8
-                self.velocity = 8
+                if self.atkbufftime <= 0:
+                    self.attack_damage = self.attack_damage + 3
+                    self.velocity = self.velocity + 3
                 self.atkbufftime = 300
 
         if self.movelimittime > 0:
@@ -161,49 +171,6 @@ class Player(pygame.sprite.Sprite):
             self.movelimittime -= 1
             if self.movelimittime <= 0:
                 self.movelimittime = 0
-        # if self.movable:
-        #     # If you're in the air and press down, you will fall faster
-        #     if keys[self.down] and self.jumping:
-        #         self.y_velocity = MAX_FALL_SPEED
-        #         self.changeStatus(KNEEL)
-        #     # If you're on the ground and press down, you will defend
-        #     elif keys[self.down]:
-        #         self.defending = True
-        #         self.changeStatus(DEFEND)
-                
-        #     if(self.defending == False):
-        #         if keys[self.left]:
-        #             if self.jumping == False:
-        #                 self.changeStatus(WALK)
-        #             if self.pos_x > BORDER[0]:
-        #                 self.pos_x -= self.velocity
-        #             moved = True
-        #             if not self.facing_left:  # Only flip if direction has changed
-        #                 self.facing_left = True
-        #                 self.image = pygame.transform.flip(self.image, True, False)  # Flip horizontally
-        #         if keys[self.right]:
-        #             if self.jumping == False:
-        #                 self.changeStatus(WALK)
-        #             if self.pos_x < BORDER[1]:
-        #                 self.pos_x += self.velocity
-        #             moved = True
-        #             if self.facing_left:  # Only flip if direction has changed
-        #                 self.facing_left = False
-        #                 #self.image = self.image
-        #                 self.image = pygame.transform.flip(self.image, True, False)
-        #             # Jump logic with 0.5 second delay after last jump
-        #         current_time = pygame.time.get_ticks()  # Get current time in milliseconds
-        #         if keys[self.up] and self.jump_count < 2 and current_time - self.last_jump_time > 400:
-        #             self.y_velocity = JUMP_STRENGTH
-        #             self.jumping = True
-        #             self.changeStatus(JUMP)
-        #             self.jump_count += 1
-        #             self.last_jump_time = current_time  # Update last jump time
-        #     # else:
-        #     #     self.changeStatus(DEFEND)
-        #     if keys[self.up] == False and keys[self.left] == False and keys[self.right] == False and keys[self.down] == False and self.jumping == False and keys[self.atk_key] == False and keys[self.range_atk_key] == False and keys[self.special_key] == False:
-        #         self.changeStatus(IDLE)
-        #         print("idle")
 
         # 更新能量
         if self.moving:
@@ -233,41 +200,24 @@ class Player(pygame.sprite.Sprite):
         self.common_timer += time.time() - self.last_tick
         self.last_tick = time.time()
 
-        # attack kits
-        # if keys[self.atk_key]:
-        #     self.attack(self.other_player)
-        #     self.movelimittime = 15 # 0.25s can't move, run animation
-        # if keys[self.range_atk_key]:
-        #     self.range_attack(self.other_player, self.projectiles_group)
-        # if keys[self.special_key]:
-        #     self.special_attack(self.other_player)    
-        # if keys[self.energy_atk_key]:
-        #     self.attack(self.other_player, powerful=True)
-
         # check falling
         if self.y_velocity > 0 and self.y_velocity != MAX_FALL_SPEED:
             self.changeStatus(FALL)
             
-    def attack(self, other_player, powerful=False):
-        
-        # global player1_attack_time, player2_attack_time
-
-        # if self.color == RED and current_time - self.attack_time > ATTACK_COOLDOWN: # player1_attack_time >= ATTACK_COOLDOWN:
+    def attack(self, other_player):
         if(self.atk_timer > ATTACK_COOLDOWN and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
             #player1_attack_time = current_time
             self.changeStatus(ATK)
             self.atk_timer = 0
             self.common_timer = 0
             offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
+            
             if self.mask.overlap(other_player.mask, offset):
-            #if abs(self.rect.x - other_player.rect.x) < self.attack_range:
-                damage = self.attack_damage_powerful if (powerful and self.energy == 100) else self.attack_damage
+                damage = self.attack_damage
                 if other_player.defending:
                     damage -= other_player.defend_strength
                     if damage < 0:
                         damage = 0
-                if powerful:
-                    self.energy = 0
                 other_player.health -= damage
                 
     def range_attack(self, other_player, projectiles_group):
@@ -277,7 +227,8 @@ class Player(pygame.sprite.Sprite):
             self.range_atk_timer = 0
             self.common_timer = 0
             direction = -1 if self.facing_left else 1
-            projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction)
+            projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction, image_path=character.character_data[self.index]['Arrow'],
+                                    scale = character.character_data[self.index]['Arrow_scale'])
             projectiles_group.add(projectile)
     
     def special_attack(self, other_player):
@@ -296,6 +247,31 @@ class Player(pygame.sprite.Sprite):
             self.prehealth = self.health
             self.guardtime = 60
             ## if health drop -> restore to original health, stunned enemy for 2s, spd atk up for 5s
+
+        elif self.index == 2:
+            ## teleport to enemy side and start shyuli
+            self.pos_x = other_player.pos_x
+            self.pos_y = other_player.pos_y
+            self.movelimittime = 60
+            ## deal lots of damage
+            other_player.health -= 10
+            
+        self.energy -= 30
+    
+    def power_attack(self, other_player):
+        if(self.energy < 100):
+            return None
+        
+        if self.index == 0:
+            ## 
+            self.waitdash = True
+            
+        elif self.index == 1:
+            ## Increase Speed, attack, and Decrease defense for 10s
+            self.ultbufftime = 600
+            self.attack_damage = self.attack_damage + 3
+            self.defend_strength = self.defend_strength - 5
+            self.velocity = self.velocity + 3
 
         elif self.index == 2:
             ## teleport to enemy side and start shyuli
@@ -443,7 +419,7 @@ class Player(pygame.sprite.Sprite):
         if keys[self.special_key]:
             self.special_attack(self.other_player)    
         if keys[self.energy_atk_key]:
-            self.attack(self.other_player, powerful=True)
+            self.power_attack(self.other_player)
 
         
  ## range attack for commander and samurai
@@ -451,10 +427,10 @@ class Player(pygame.sprite.Sprite):
  ## commander: add spd
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, other_player, damage, direction):
+    def __init__(self, x, y, other_player, damage, direction, image_path, scale):
         super().__init__()
-        self.base_image = pygame.image.load('images/character/Archer/Arrow.png')
-        self.base_image = pygame.transform.scale(self.base_image, (100, 100))
+        self.base_image = pygame.image.load(image_path)
+        self.base_image = pygame.transform.scale(self.base_image, (scale,scale))
         if direction == -1:
             self.base_image = pygame.transform.flip(self.base_image, True, False)
         self.mask = pygame.mask.from_surface(self.base_image)
