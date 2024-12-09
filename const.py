@@ -32,4 +32,4 @@ ATK = 7
 SPEC_ATK = 8
 RANGE_ATK = 9
 # 邊界
-BORDER = (0, WIDTH)
+BORDER = (-500, 1700)

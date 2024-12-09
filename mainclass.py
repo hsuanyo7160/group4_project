@@ -1,6 +1,6 @@
 import pygame
 import sys
-from player import Player
+from player import Player, Background
 from const import *
 from screen import Screen
 # 初始化 pygame
@@ -27,8 +27,7 @@ def main_game():
     countdown_time = 185
     font = pygame.font.SysFont('Arial', 36)
     # 載入背景圖像
-    background_image = pygame.image.load(f'images/background/{map_choice}')
-    background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+    background = Background(map_choice)
     
     # 初始化玩家位置
     player1_x, player1_y = 100, HEIGHT - 420
@@ -59,7 +58,7 @@ def main_game():
             player2.handleinput(keys)
             player1.update()
             player2.update()
-            projectiles_group.update()
+            projectiles_group.update(zoom, camera_pos)
         
         # 更新倒數計時
         countdown_time -= 1 / FPS
@@ -70,12 +69,16 @@ def main_game():
         countdown_text = font.render(f'Time: {minutes:02}:{seconds:02}', True, BLACK)
 
         # Blit background image
-        scrn.screen.blit(background_image, (0, 0))
+        background.draw(scrn.screen)
         scrn.all_sprites.draw(scrn.screen)
         projectiles_group.draw(scrn.screen)
         #blit player
-        player1.draw(scrn.screen)
-        player2.draw(scrn.screen)
+        camera_pos = ((player1.pos_x + player2.pos_x)/2, (player1.pos_y + player2.pos_y)/2)
+        zoom = player1.draw(scrn.screen, camera_pos)
+        zoom = player2.draw(scrn.screen, camera_pos)
+        # print(camera_pos, player1.pos_x, player2.pos_x)
+        # update background
+        background.update(zoom, camera_pos)
         # 顯示玩家血量, 能量條, 倒數計時
         if countdown_time > 180:
             scrn.show_ready_countdown(countdown_time)

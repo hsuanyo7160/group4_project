@@ -218,8 +218,8 @@ class Player(pygame.sprite.Sprite):
         self.pos_y += self.y_velocity
 
         # Check if landed
-        if self.pos_y >= HEIGHT - 320:
-            self.pos_y = HEIGHT - 320
+        if self.pos_y >= HEIGHT - 420:
+            self.pos_y = HEIGHT - 420
             self.jumping = False
             self.y_velocity = 0
             self.jump_count = 0  # Reset jump count when the player lands
@@ -308,15 +308,26 @@ class Player(pygame.sprite.Sprite):
             
         self.energy -= 30
     
-    def draw(self, screen, zoom=1, offset=(0, 0)):
+    def draw(self, screen, camera_pos=(600, 300)): # camera_pos = half of distance between players
         self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
         if self.facing_left:
             self.image = pygame.transform.flip(self.image, True, False)
-        self.image = scale_image(self.image, 300 * zoom)
-        self.rect = self.image.get_rect()
-        self.rect.centerx = self.pos_x + offset[0]
-        self.rect.centery = self.pos_y + offset[1]
+        if abs(camera_pos[0] - self.pos_x) < 500:
+            zoom = 1
+            self.image = scale_image(self.image, 300 * zoom)
+            self.rect = self.image.get_rect()
+            self.rect.centerx = self.pos_x - camera_pos[0] + 600
+            self.rect.centery = self.pos_y - camera_pos[1] + 300
+        else:
+            zoom = 1000 / (abs(camera_pos[0] - self.pos_x) *2)
+            self.image = scale_image(self.image, 300 * zoom)
+            self.rect = self.image.get_rect()
+            self.rect.centerx = 100 if self.pos_x < camera_pos[0] else 1100
+            self.rect.centery = self.pos_y - camera_pos[1] + 300
+        
         self.mask = pygame.mask.from_surface(self.image)
+
+        return zoom
         
         
         
@@ -447,6 +458,8 @@ class Projectile(pygame.sprite.Sprite):
             self.base_image = pygame.transform.flip(self.base_image, True, False)
         self.mask = pygame.mask.from_surface(self.base_image)
         self.rect = self.base_image.get_rect()
+        self.pos_x = x
+        self.pos_y = y
         self.rect.centerx = x
         self.rect.centery = y
         self.velocity_x = 30  # Speed of the projectile
@@ -455,24 +468,33 @@ class Projectile(pygame.sprite.Sprite):
         self.target = other_player
         self.damage = damage
         
-    def update(self):
+    def update(self, zoom, camera_pos):
         """Update projectile's position"""
         self.velocity_y += GRAVITY
-        self.rect.x += self.velocity_x * self.direction  # Update x position based on direction
-        self.rect.y += self.velocity_y
+        self.pos_x += self.velocity_x * self.direction  # Update x position based on direction
+        self.pos_y += self.velocity_y
+
+        if self.pos_x < BORDER[0] or self.pos_x > BORDER[1]:  # If the projectile goes off the screen
+            self.kill()  # Remove the projectile from the game
+        elif self.pos_y > HEIGHT:
+            self.kill()  # Remove the projectile from the game
+        
         # rotate image based on velocity_x and velocity_y
         angle = 0
         if self.velocity_x != 0:
             angle = -self.velocity_y / self.velocity_x * self.direction
             angle = angle * 180 / 3.14159 # Convert to degrees
         self.image = pygame.transform.rotate(self.base_image, angle)
+        self.image = scale_image(self.image, 100 * zoom)
+        self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         
-        if self.rect.right < 0 or self.rect.left > WIDTH:  # If the projectile goes off the screen
-            self.kill()  # Remove the projectile from the game
-        elif self.rect.top > HEIGHT:
-            self.kill()  # Remove the projectile from the game
+        self.rect.centerx = self.pos_x - camera_pos[0] + 600
+        self.rect.centery = self.pos_y - camera_pos[1] + 300
 
+        # print(self.rect)
+        # print(self.target.rect)
+        
         # Check collision with the target
         offset = (self.target.rect.x - self.rect.x, self.target.rect.y - self.rect.y)
         if self.mask.overlap(self.target.mask, offset):
@@ -484,7 +506,26 @@ class Projectile(pygame.sprite.Sprite):
                     damage = 0
             self.target.health -= damage  # Apply damage
             self.kill() 
+        
             
     def draw(self, screen): 
         screen.blit(self.image, self.rect)
+
+
+class Background(pygame.sprite.Sprite):
+    def __init__(self, map_choice):
+        super().__init__()
+        self.base_image = pygame.image.load(f'images/background/{map_choice}')
+        self.image = scale_image(self.base_image, HEIGHT*3)
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (0, 0)
+        
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+        
+    def update(self, zoom, camera_pos):
+        self.image = scale_image(self.base_image, HEIGHT * 3 * zoom)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = 1200 - camera_pos[0]
+        self.rect.centery = 600 - camera_pos[1]
 
