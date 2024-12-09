@@ -72,6 +72,7 @@ def main_game():
         background.draw(scrn.screen)
         scrn.all_sprites.draw(scrn.screen)
         projectiles_group.draw(scrn.screen)
+        
         #blit player
         camera_pos = ((player1.pos_x + player2.pos_x)/2, (player1.pos_y + player2.pos_y)/2)
         zoom = player1.draw(scrn.screen, camera_pos)
