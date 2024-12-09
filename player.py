@@ -130,7 +130,6 @@ class Player(pygame.sprite.Sprite):
         if self.dashtime > 0:
             self.movable = False
             self.dashtime -= 1
-            print(self.pos_x)
             self.pos_x += 10 if self.facing_left else -10
             if self.dashtime <= 0:
                 self.dashtime = 0
@@ -138,6 +137,9 @@ class Player(pygame.sprite.Sprite):
         # Guard and move limit
         if self.waitdash:
             self.changeStatus(ATK)
+            self.range_atk_timer = self.range_cooldown + 1
+            self.common_timer = ATTACK_COOLDOWN + 1
+            self.range_attack(self.other_player, self.projectiles_group)
             self.movable = False
             self.waitdash = False
             self.dashtime = 30
@@ -284,9 +286,7 @@ class Player(pygame.sprite.Sprite):
         self.atk_timer = 0
         if self.index == 0:
             ## wait for next input
-            self.waitdash = True
-            
-                
+            self.waitdash = True        
             ## increase speed of that input(dash)
             
             ## deal damage, add progectile , energy -30 and animation
