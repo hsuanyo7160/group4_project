@@ -61,6 +61,35 @@ class Screen:
         # 玩家2的能量條
         self.draw_gradient_bar(self.screen, Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(WIDTH - 20 - self.player2.displayed_energy * 3, 50, self.player2.displayed_energy * 3, 8))
         pygame.draw.rect(self.screen, WHITE, (WIDTH - 320, 50, 300, 10), 2)
+    
+    def show_player_status(self):
+        # Player 1's buff
+        image1_path_list = []
+        if self.player1.atkbufftime or (self.player1.ultbufftime > 0 and self.player1.index == 1) > 0:
+            image1_path_list.append('images/status/velocity.png')
+            image1_path_list.append('images/status/attack.png')
+        if self.player1.bleed > 0:
+            image1_path_list.append('images/status/bleed.png')
+        if self.player1.ultbufftime > 0 and self.player1.index == 0:
+            image1_path_list.append('images/status/attack_speed.png')
+        for i, image_path in enumerate(image1_path_list):
+            image = pygame.image.load(image_path)
+            image = pygame.transform.scale(image, (30, 30))
+            self.screen.blit(image, (30 + 50 * i, 60))
+        image2_path_list = []
+        
+        if self.player2.atkbufftime or (self.player2.ultbufftime > 0 and self.player2.index == 1) > 0:
+            image2_path_list.append('images/status/velocity.png')
+            image2_path_list.append('images/status/attack.png')
+        if self.player2.bleed > 0:
+            image2_path_list.append('images/status/bleed.png')
+        if self.player2.ultbufftime > 0 and self.player2.index == 0:
+            image2_path_list.append('images/status/attack_speed.png')
+        for i, image_path in enumerate(image2_path_list):
+            image = pygame.image.load(image_path)
+            image = pygame.transform.scale(image, (30, 30))
+            self.screen.blit(image, (WIDTH - 60 - 50* (i + 1), 60))
+        
 
     def show_main_menu(self):
         # 加載字體
