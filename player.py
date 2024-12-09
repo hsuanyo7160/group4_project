@@ -288,7 +288,6 @@ class Player(pygame.sprite.Sprite):
             ## wait for next input
             self.waitdash = True        
             ## increase speed of that input(dash)
-            
             ## deal damage, add progectile , energy -30 and animation
             
             
