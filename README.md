@@ -1,4 +1,4 @@
-# 2 Vs 2 Fighting Game
+#  Group4 Project : Fighting Game
 ## Installation
 1. pygame
 2. If error happen, try running 
