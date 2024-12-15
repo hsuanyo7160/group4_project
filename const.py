@@ -31,5 +31,6 @@ NONE = 6
 ATK = 7
 SPEC_ATK = 8
 RANGE_ATK = 9
+DEAD = 10
 # 邊界
 BORDER = (-200, 1400)

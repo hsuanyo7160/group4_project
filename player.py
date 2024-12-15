@@ -224,7 +224,7 @@ class Player(pygame.sprite.Sprite):
         self.common_timer += time_passed
         self.last_tick = current_time
         # check idle
-        if not self.jumping and not self.defending and not self.moving and not self.attacking:
+        if not self.jumping and not self.defending and not self.moving and not self.attacking and self.status != DEAD:
             self.changeStatus(IDLE)
         # check falling
         if self.y_velocity > 0 and self.y_velocity != MAX_FALL_SPEED and not self.attacking:
@@ -232,6 +232,7 @@ class Player(pygame.sprite.Sprite):
                 
     def attack(self):
         if(self.atk_timer > ATTACK_COOLDOWN and not self.defending and self.common_timer > ATTACK_COOLDOWN):
+            # 流血狀態攻擊會扣血
             if self.bleed > 0:
                 self.health -= 5
             #player1_attack_time = current_time
@@ -403,7 +404,10 @@ class Player(pygame.sprite.Sprite):
         elif status == SPEC_ATK:
             self.frame_rate = 60 // character.character_data[self.index]['attack3Frame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack3'], character.character_data[self.index]['attack3Frame'])
-   
+        elif status == DEAD:
+            self.frame_rate = 60 // character.character_data[self.index]['deadFrame']
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['dead'], character.character_data[self.index]['deadFrame'])
+
     def increaseframe(self):
         """增加動畫幀，根據 frame_rate 決定是否更新"""
         self.frame_counter += 1
@@ -411,7 +415,6 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             if self.status == JUMP and self.frame == character.character_data[self.index]['jumpFrame'] - 1:
                 return
-            # 攻擊動畫到最後一幀時不循環
             if self.status == ATK:
                 self.attack_hit_check()  # 執行攻擊判定
                 if self.frame == character.character_data[self.index]['attack1Frame'] - 1:
@@ -426,13 +429,17 @@ class Player(pygame.sprite.Sprite):
             if self.status == SPEC_ATK and self.frame == character.character_data[self.index]['attack3Frame'] - 1:
                 self.attacking = False
                 return
-            
+            if self.status == DEAD and self.frame == character.character_data[self.index]['deadFrame'] - 1:
+                return
             self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
             self.frame_counter = 0  # 重置計數器
 
+    def playerdead(self):
+        self.changeStatus(DEAD)
 
     def handleinput(self, keys):
-        #if self.color == RED: print(self.movable)
+        if self.status == DEAD:
+            return
         self.moving = False
         if self.movable:
             if self.jumping: # If you're in the air and press down, you will fall faster
@@ -465,7 +472,7 @@ class Player(pygame.sprite.Sprite):
                     if not self.jumping: self.changeStatus(WALK)
                     #self.image = pygame.transform.flip(self.image, not self.facing_left, False)
             # Jump logic with 0.5 second delay after last jump
-            if keys[self.up] and self.jump_count < 2 and self.last_tick - self.last_jump_time > 0.4:
+            if keys[self.up] and self.jump_count < 2 and self.last_tick - self.last_jump_time > 0.4 and not self.defending:
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
                 self.changeStatus(JUMP)

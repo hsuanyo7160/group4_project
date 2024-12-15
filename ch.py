@@ -22,6 +22,7 @@ class character:
             "protect": "images/character/Archer/Protect.png",
             "fall": "images/character/Archer/Falling.png",
             "kneel": "images/character/Archer/Kneel.png",
+            "dead": "images/character/Archer/Dead.png",
             "idleFrame": 9,
             "walkFrame": 8,
             "jumpFrame": 3,
@@ -30,6 +31,7 @@ class character:
             "protectFrame": 3,
             "fallFrame": 3,
             "kneelFrame": 2,
+            "deadFrame": 5,
             
         },
         {
@@ -55,6 +57,7 @@ class character:
             "protect": "images/character/Samurai/Protect.png",
             "fall": "images/character/Samurai/Falling.png",
             "kneel": "images/character/Samurai/Kneel.png",
+            "dead": "images/character/Samurai/Dead.png",
             "idleFrame": 6,
             "walkFrame": 8,
             "jumpFrame": 3,
@@ -64,6 +67,7 @@ class character:
             "protectFrame": 2,
             "fallFrame": 2,
             "kneelFrame": 2,
+            "deadFrame": 6,
 
         },
         {
@@ -88,6 +92,7 @@ class character:
             "protect": "images/character/Commander/Protect.png",
             "fall": "images/character/Commander/Falling.png",
             "kneel": "images/character/Commander/Kneel.png",
+            "dead": "images/character/Commander/Dead.png",
             "idleFrame": 5,
             "walkFrame": 8,
             "jumpFrame": 3,
@@ -96,5 +101,6 @@ class character:
             "protectFrame": 2,
             "fallFrame": 2,
             "kneelFrame": 2,
+            "deadFrame": 6,
         },
     ]

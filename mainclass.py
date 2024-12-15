@@ -49,13 +49,14 @@ def main_game():
     player1.setProjectileGroup(projectiles_group)
     player2.setProjectileGroup(projectiles_group)
 
+    deadcounter = 0
     while running:
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         
-        if countdown_time > 0 and countdown_time < 180 and player1.health > 0 and player2.health > 0:
+        if countdown_time > 0 and countdown_time < 180:# and player1.health > 0 and player2.health > 0:
             player1.handleinput(keys)
             player2.handleinput(keys)
             player1.update()
@@ -99,34 +100,42 @@ def main_game():
         
         # 檢查遊戲結束
         if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:
+            if deadcounter == 0:
+                if player1.health <= 0:
+                    player1.playerdead()
+                if player2.health <= 0:
+                    player2.playerdead()
+                    print("player2 dead")
+            
             # 顯示遊戲結束畫面
-            # winner = "Player 1" if player2.health < player1.health else "Player 2"
-            # if(player1.health == player2.health):
-            #     winner = "Tie"
-            scrn.show_game_over()
+            if deadcounter > 60:
+                scrn.show_game_over()
+                # 重新開始遊戲或離開遊戲
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_r]:
+                    # 重置玩家
+                    player1.kill()
+                    player2.kill()
 
-            # 重新開始遊戲或離開遊戲
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_r]:
-                # 重置玩家
-                player1.kill()
-                player2.kill()
+                    player1 = Player(RED, player1_x, player1_y, playerlist[0])
+                    player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
 
-                player1 = Player(RED, player1_x, player1_y, playerlist[0])
-                player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
+                    player1.setOpponent(player2)
+                    player2.setOpponent(player1)
+                    scrn.addPlayer(player1, player2)
+                    # 初始化射擊物件群組
+                    projectiles_group = pygame.sprite.Group()
+                    player1.setProjectileGroup(projectiles_group)
+                    player2.setProjectileGroup(projectiles_group)
 
-                player1.setOpponent(player2)
-                player2.setOpponent(player1)
-                scrn.addPlayer(player1, player2)
-                # 初始化射擊物件群組
-                projectiles_group = pygame.sprite.Group()
-                player1.setProjectileGroup(projectiles_group)
-                player2.setProjectileGroup(projectiles_group)
+                    # 重置倒計時
+                    countdown_time = 185
+                elif keys[pygame.K_q]:
+                    running = False
+            else :
+                deadcounter += 1
 
-                # 重置倒計時
-                countdown_time = 185
-            elif keys[pygame.K_q]:
-                running = False
+            
         
         pygame.display.update()
         scrn.clock.tick(FPS)
