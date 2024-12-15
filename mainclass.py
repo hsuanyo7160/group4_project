@@ -87,6 +87,7 @@ def main_game():
         # update background
         background.update(zoom, camera_pos)
 
+
         # 顯示玩家血量, 能量條, 倒數計時
         if countdown_time > 180:
             scrn.show_ready_countdown(countdown_time)

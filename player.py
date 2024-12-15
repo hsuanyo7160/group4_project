@@ -27,6 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_counter = 0  # 計數器
         self.frame_rate = 10    # 幀速率，每 10 幀更新一次動畫幀
         self.frame = 0
+        self.trail_counter = 2
         ############ Need to Optimize##############
         self.rect = self.image.get_rect()
         self.rect.centerx = x
@@ -59,6 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.dashing = False
         self.jumping = False
         self.defending = False
+        self.atkcollide = False
         # action status
         self.status = IDLE
         # timer
@@ -89,12 +91,37 @@ class Player(pygame.sprite.Sprite):
         self.other_player = None
         #group binding
         self.projectiles_group = None
+        # 狀態屬性
+        self.trails = []  # 存放殘影數據的列表
+        self.trail_lifetime = 10  # 殘影的生命時間（幀數）
 
     def setOpponent(self, player):
         self.other_player = player
 
     def setProjectileGroup(self, group):
         self.projectiles_group = group
+
+    def leave_trail(self):
+        """生成殘影"""
+        trail_image = self.image.copy()
+        trail_rect = self.rect.copy()
+        self.trails.append({"image": trail_image, "rect": trail_rect, "life": self.trail_lifetime})
+
+    def draw_trails(self, screen):
+        """繪製殘影"""
+        for trail in self.trails:
+            # 調整透明度
+            alpha = int(255 * (trail["life"] / self.trail_lifetime))  # 根據生命週期計算透明度
+            trail_image = trail["image"].copy()
+            trail_image.set_alpha(alpha)
+            screen.blit(trail_image, trail["rect"])
+
+    def update_trails(self):
+        """更新殘影的生命週期"""
+        self.trail_counter += 1
+        for trail in self.trails:
+            trail["life"] -= 1  # 減少生命時間
+        self.trails = [trail for trail in self.trails if trail["life"] > 0]  # 移除過期的殘影
 
     def update(self):
         
@@ -133,8 +160,10 @@ class Player(pygame.sprite.Sprite):
                     self.attack_damage = self.attack_damage - 3
                     self.defend_strength = self.defend_strength + 5
                     self.velocity = self.velocity - 3
-            
         
+        # Update trails
+        if self.trails:
+            self.update_trails()
         # Guard and move limit
         if self.waitdash:
             self.changeStatus(ATK)
@@ -200,25 +229,6 @@ class Player(pygame.sprite.Sprite):
         # check falling
         if self.y_velocity > 0 and self.y_velocity != MAX_FALL_SPEED and not self.attacking:
             self.changeStatus(FALL)
-
-    # def attack(self, other_player):
-    #     if(self.atk_timer > ATTACK_COOLDOWN and not self.defending and self.common_timer > ATTACK_COOLDOWN):
-    #         if self.bleed > 0:
-    #             self.health -= 5
-    #         #player1_attack_time = current_time
-    #         self.changeStatus(ATK)
-    #         self.atk_timer = 0
-    #         self.attacking = True
-    #         self.common_timer = 0
-    #         offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
-            
-    #         if self.mask.overlap(other_player.mask, offset):
-    #             damage = self.attack_damage
-    #             if other_player.defending:
-    #                 damage -= other_player.defend_strength
-    #                 if damage < 0:
-    #                     damage = 0
-    #             other_player.health -= damage
                 
     def attack(self):
         if(self.atk_timer > ATTACK_COOLDOWN and not self.defending and self.common_timer > ATTACK_COOLDOWN):
@@ -229,31 +239,33 @@ class Player(pygame.sprite.Sprite):
             self.atk_timer = 0
             self.attacking = True
             self.common_timer = 0
+            # offset = (self.other_player.pos_x - self.pos_x, self.other_player.pos_y - self.pos_y)
+            
+            # if self.mask.overlap(self.other_player.mask, offset):
+            #     damage = self.attack_damage
+            #     if self.other_player.defending:
+            #         damage -= self.other_player.defend_strength
+            #         if damage < 0:
+            #             damage = 0
+            #     self.other_player.health -= damage
+    
+    def attack_hit_check(self):
+        """檢查攻擊是否命中對手"""
+        if self.other_player:
+            # 計算對手相對於當前角色的位置偏移
             offset = (self.other_player.pos_x - self.pos_x, self.other_player.pos_y - self.pos_y)
             
-            if self.mask.overlap(self.other_player.mask, offset):
+            # 使用 mask 檢查碰撞
+            if self.mask.overlap(self.other_player.mask, offset) and self.atkcollide == False:
                 damage = self.attack_damage
-                if self.other_player.defending:
+                self.atkcollide = True
+                # 如果對手正在防禦，減少傷害
+                if self.other_player.status == DEFEND:
                     damage -= self.other_player.defend_strength
-                    if damage < 0:
-                        damage = 0
-                self.other_player.health -= damage
-    
-    # def range_attack(self, other_player, projectiles_group, type):
-    #     """發射遠程攻擊（子彈）"""
-    #     # 創建一個子彈並設定其初始位置和方向
-    #     if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
-    #         if self.bleed > 0:
-    #             self.health -= 5
-    #         self.changeStatus(RANGE_ATK)
-    #         self.attacking = True
-    #         self.range_atk_timer = 0
-    #         self.common_timer = 0
-    #         direction = -1 if self.facing_left else 1
-    #         projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction, image_path=character.character_data[self.index]['Arrow'],
-    #                                 size = character.character_data[self.index]['Arrow_scale'], effect = type)
-    #         projectiles_group.add(projectile)
+                    damage = max(damage, 0)  # 確保傷害不為負數
 
+                # 將傷害應用到對手
+                self.other_player.health -= damage
 
     def range_attack(self, type):
         """發射遠程攻擊（子彈）"""
@@ -331,6 +343,9 @@ class Player(pygame.sprite.Sprite):
         self.energy -= 100
     
     def draw(self, screen, camera_pos=(600, 300)): # camera_pos = half of distance between players
+        # Draw trails
+        self.draw_trails(screen)
+        # Draw player
         self.image = self.sprite_sheet.get_image(self.frame, (0,0,0))
         if self.facing_left:
             self.image = pygame.transform.flip(self.image, True, False)
@@ -388,16 +403,21 @@ class Player(pygame.sprite.Sprite):
         elif status == SPEC_ATK:
             self.frame_rate = 60 // character.character_data[self.index]['attack3Frame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack3'], character.character_data[self.index]['attack3Frame'])
+   
     def increaseframe(self):
         """增加動畫幀，根據 frame_rate 決定是否更新"""
         self.frame_counter += 1
         if self.frame_counter >= self.frame_rate:
+            self.mask = pygame.mask.from_surface(self.image)
             if self.status == JUMP and self.frame == character.character_data[self.index]['jumpFrame'] - 1:
                 return
             # 攻擊動畫到最後一幀時不循環
-            if self.status == ATK and self.frame == character.character_data[self.index]['attack1Frame'] - 1:
-                self.attacking = False
-                return
+            if self.status == ATK:
+                self.attack_hit_check()  # 執行攻擊判定
+                if self.frame == character.character_data[self.index]['attack1Frame'] - 1:
+                    self.atkcollide = False
+                    self.attacking = False
+                    return
             if self.status == DEFEND and self.frame == character.character_data[self.index]['protectFrame'] - 1:
                 return
             if self.status == RANGE_ATK and self.frame == character.character_data[self.index]['attack2Frame'] - 1:
@@ -436,6 +456,10 @@ class Player(pygame.sprite.Sprite):
                     if not self.defending: move_delta = self.velocity
                     self.facing_left = False
                 if move_delta != 0:
+                    #check velocity and leave trail
+                    if self.velocity > character.character_data[self.index]['velocity'] and self.trail_counter > 1:
+                        self.leave_trail()
+                        self.trail_counter = 0
                     self.pos_x += move_delta
                     self.moving = True
                     if not self.jumping: self.changeStatus(WALK)
@@ -467,7 +491,7 @@ class Player(pygame.sprite.Sprite):
         if keys[self.energy_atk_key]:
             self.power_attack()
 
-        
+            
  ## range attack for commander and samurai
  ## samurai: lower dmg but slow enemy
  ## commander: add spd
