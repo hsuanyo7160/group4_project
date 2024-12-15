@@ -227,7 +227,7 @@ class Player(pygame.sprite.Sprite):
         if not self.jumping and not self.defending and not self.moving and not self.attacking and self.status != DEAD:
             self.changeStatus(IDLE)
         # check falling
-        if self.y_velocity > 0 and self.y_velocity != MAX_FALL_SPEED and not self.attacking:
+        if self.y_velocity > 0 and self.y_velocity != MAX_FALL_SPEED and not self.attacking and self.status != DEAD:
             self.changeStatus(FALL)
                 
     def attack(self):
@@ -546,9 +546,6 @@ class Projectile(pygame.sprite.Sprite):
         
         self.rect.centerx = self.pos_x - camera_pos[0] + 600
         self.rect.centery = self.pos_y - camera_pos[1] + 300
-
-        # print(self.rect)
-        # print(self.target.rect)
         
         # Check collision with the target
         offset = (self.target.rect.x - self.rect.x, self.target.rect.y - self.rect.y)

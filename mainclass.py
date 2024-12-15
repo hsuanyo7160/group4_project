@@ -130,6 +130,7 @@ def main_game():
 
                     # 重置倒計時
                     countdown_time = 185
+                    deadcounter = 0
                 elif keys[pygame.K_q]:
                     running = False
             else :

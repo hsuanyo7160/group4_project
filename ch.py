@@ -10,7 +10,7 @@ class character:
             "velocity": 5,
             "attack_range": 100,
             "defend_strength": 20,
-            "range_damage": 5,
+            "range_damage": 50,
             "range_cooldown": 0.5,
             "Arrow": "images/character/Archer/Arrow.png",
             "Arrow_scale": 100,
