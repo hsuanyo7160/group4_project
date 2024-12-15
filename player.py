@@ -33,36 +33,34 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = y
         # Status
         self.pos_x = x
-        self.pos_y = y
-        
+        self.pos_y = y   
         self.health = 200
         self.energy = 0
         self.displayed_health = 0
-        self.displayed_energy = 0
-        self.defending = False
+        self.displayed_energy = 0   
         self.y_velocity = 0
-        self.jumping = False
         self.last_jump_time = 0 
-        self.jump_count = 0
-        self.facing_left = False if color == RED else True
+        self.jump_count = 0   
         self.attack_time = 0
         self.range_attack_time = 0
         self.movelimittime = 0
         self.prehealth = self.health
         self.atkbufftime = 0
         self.guardtime = 0
-        self.waitdash = False
-        self.dashing = False
         self.dashtime = 0
-        self.attacking = False
-        self.movable = True
-        self.moving = False
         self.ultbufftime = 0
         self.bleed = 0
+        #boolin
+        self.facing_left = False if color == RED else True
+        self.movable = True
+        self.moving = False
+        self.attacking = False
+        self.waitdash = False
+        self.dashing = False
+        self.jumping = False
+        self.defending = False
         # action status
         self.status = IDLE
-        # attack counter
-        self.attack_counter = 0
         # timer
         self.atk_timer = 0
         self.range_atk_timer = 0
@@ -91,17 +89,16 @@ class Player(pygame.sprite.Sprite):
         self.other_player = None
         #group binding
         self.projectiles_group = None
-        
+
+    def setOpponent(self, player):
+        self.other_player = player
+
+    def setProjectileGroup(self, group):
+        self.projectiles_group = group
+
     def update(self):
         
         self.increaseframe()
-        # print(self.frame)
-        
-        
-        # 移動控制和能量增加
-        # keys = pygame.key.get_pressed()
-        # self.moving = False
-        # self.defending = False
         self.movable = True
         # Debuff
         if self.bleed > 0:
@@ -143,7 +140,8 @@ class Player(pygame.sprite.Sprite):
             self.changeStatus(ATK)
             self.range_atk_timer = self.range_cooldown + 1
             self.common_timer = ATTACK_COOLDOWN + 1
-            self.range_attack(self.other_player, self.projectiles_group, "normal")
+            #self.range_attack(self.other_player, self.projectiles_group, "normal")
+            self.range_attack("normal")
             self.movable = False
             self.waitdash = False
             self.dashtime = 30
@@ -155,12 +153,12 @@ class Player(pygame.sprite.Sprite):
                 print("guard")
                 self.health = self.prehealth
                 self.guardtime = 0
-                self.other_player.movelimmitime = 30
+                self.attacking = False
+                self.other_player.movelimittime = 30
                 if self.atkbufftime <= 0:
                     self.attack_damage = self.attack_damage + 3
                     self.velocity = self.velocity + 3
                 self.atkbufftime = 300
-
         if self.movelimittime > 0:
             self.movable = False
             self.movelimittime -= 1
@@ -196,14 +194,33 @@ class Player(pygame.sprite.Sprite):
         self.special_timer += time_passed
         self.common_timer += time_passed
         self.last_tick = current_time
-
+        # check idle
         if not self.jumping and not self.defending and not self.moving and not self.attacking:
             self.changeStatus(IDLE)
         # check falling
         if self.y_velocity > 0 and self.y_velocity != MAX_FALL_SPEED and not self.attacking:
             self.changeStatus(FALL)
 
-    def attack(self, other_player):
+    # def attack(self, other_player):
+    #     if(self.atk_timer > ATTACK_COOLDOWN and not self.defending and self.common_timer > ATTACK_COOLDOWN):
+    #         if self.bleed > 0:
+    #             self.health -= 5
+    #         #player1_attack_time = current_time
+    #         self.changeStatus(ATK)
+    #         self.atk_timer = 0
+    #         self.attacking = True
+    #         self.common_timer = 0
+    #         offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
+            
+    #         if self.mask.overlap(other_player.mask, offset):
+    #             damage = self.attack_damage
+    #             if other_player.defending:
+    #                 damage -= other_player.defend_strength
+    #                 if damage < 0:
+    #                     damage = 0
+    #             other_player.health -= damage
+                
+    def attack(self):
         if(self.atk_timer > ATTACK_COOLDOWN and not self.defending and self.common_timer > ATTACK_COOLDOWN):
             if self.bleed > 0:
                 self.health -= 5
@@ -212,17 +229,33 @@ class Player(pygame.sprite.Sprite):
             self.atk_timer = 0
             self.attacking = True
             self.common_timer = 0
-            offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
+            offset = (self.other_player.pos_x - self.pos_x, self.other_player.pos_y - self.pos_y)
             
-            if self.mask.overlap(other_player.mask, offset):
+            if self.mask.overlap(self.other_player.mask, offset):
                 damage = self.attack_damage
-                if other_player.defending:
-                    damage -= other_player.defend_strength
+                if self.other_player.defending:
+                    damage -= self.other_player.defend_strength
                     if damage < 0:
                         damage = 0
-                other_player.health -= damage
-                
-    def range_attack(self, other_player, projectiles_group, type):
+                self.other_player.health -= damage
+    
+    # def range_attack(self, other_player, projectiles_group, type):
+    #     """發射遠程攻擊（子彈）"""
+    #     # 創建一個子彈並設定其初始位置和方向
+    #     if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
+    #         if self.bleed > 0:
+    #             self.health -= 5
+    #         self.changeStatus(RANGE_ATK)
+    #         self.attacking = True
+    #         self.range_atk_timer = 0
+    #         self.common_timer = 0
+    #         direction = -1 if self.facing_left else 1
+    #         projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction, image_path=character.character_data[self.index]['Arrow'],
+    #                                 size = character.character_data[self.index]['Arrow_scale'], effect = type)
+    #         projectiles_group.add(projectile)
+
+
+    def range_attack(self, type):
         """發射遠程攻擊（子彈）"""
         # 創建一個子彈並設定其初始位置和方向
         if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
@@ -233,11 +266,11 @@ class Player(pygame.sprite.Sprite):
             self.range_atk_timer = 0
             self.common_timer = 0
             direction = -1 if self.facing_left else 1
-            projectile = Projectile(self.pos_x, self.pos_y, other_player, self.range_damage, direction, image_path=character.character_data[self.index]['Arrow'],
+            projectile = Projectile(self.pos_x, self.pos_y, self.other_player, self.range_damage, direction, image_path=character.character_data[self.index]['Arrow'],
                                     size = character.character_data[self.index]['Arrow_scale'], effect = type)
-            projectiles_group.add(projectile)
+            self.projectiles_group.add(projectile)
     
-    def special_attack(self, other_player):
+    def special_attack(self):
         if(self.atk_timer < ATTACK_COOLDOWN or self.energy < 30):
             return None
         if self.bleed > 0:
@@ -252,20 +285,22 @@ class Player(pygame.sprite.Sprite):
             ## cant move and animation
             self.prehealth = self.health
             self.guardtime = 60
+            self.changeStatus(SPEC_ATK)
+            self.attacking = True
             ## if health drop -> restore to original health, stunned enemy for 2s, spd atk up for 5s
 
         elif self.index == 2:
             ## teleport to enemy side and start shyuli
-            self.pos_x = other_player.pos_x
-            self.pos_y = other_player.pos_y
+            self.pos_x = self.other_player.pos_x
+            self.pos_y = self.other_player.pos_y
             self.movelimittime = 60
             ## deal lots of damage
-            other_player.health -= 10
+            self.other_player.health -= 10
             
         self.energy -= 30
     
     # J attack
-    def power_attack(self, other_player):
+    def power_attack(self):
         if(self.energy < 100):
             return None
         if self.bleed > 0:
@@ -288,8 +323,8 @@ class Player(pygame.sprite.Sprite):
             self.changeStatus(ATK)
             self.atk_timer = 0
             self.common_timer = 0
-            offset = (other_player.pos_x - self.pos_x, other_player.pos_y - self.pos_y)
-            if self.mask.overlap(other_player.mask, offset):
+            offset = (self.other_player.pos_x - self.pos_x, self.other_player.pos_y - self.pos_y)
+            if self.mask.overlap(self.other_player.mask, offset):
                 # Add bleed effect
                 self.other_player.bleed = 450
             
@@ -314,13 +349,14 @@ class Player(pygame.sprite.Sprite):
         
         self.mask = pygame.mask.from_surface(self.image)
 
+        screen.blit(self.image, self.rect)
         return zoom
         
         
         
 
     def changeStatus(self, status):
-        if self.status != status :#or status == JUMP:
+        if self.status != status :
             self.frame = 0
             self.frame_counter = 0
         self.status = status
@@ -335,17 +371,9 @@ class Player(pygame.sprite.Sprite):
             self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['walk'], character.character_data[self.index]['walkFrame'])
         elif status == ATK:
-            # if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
-            #     self.frame_rate = 3
-            # else: # Archer
-            #     self.frame_rate = 1
             self.frame_rate = 15 // character.character_data[self.index]['attack1Frame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack1'], character.character_data[self.index]['attack1Frame'])
         elif status == DEFEND:
-            # if character.character_data[self.index]['name'] == "Samurai" or character.character_data[self.index]['name'] == "Commander":
-            #     self.frame_rate = 4
-            # else: # Archer
-            #     self.frame_rate = 3
             self.frame_rate = 8 // character.character_data[self.index]['protectFrame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['protect'], character.character_data[self.index]['protectFrame'])
         elif status == FALL:
@@ -355,9 +383,11 @@ class Player(pygame.sprite.Sprite):
             self.frame_rate = 10
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['kneel'], character.character_data[self.index]['kneelFrame'])
         elif status == RANGE_ATK:
-            self.frame_rate = 15 // character.character_data[self.index]['attack2Frame']
+            self.frame_rate = 8 // character.character_data[self.index]['attack2Frame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack2'], character.character_data[self.index]['attack2Frame'])
-    
+        elif status == SPEC_ATK:
+            self.frame_rate = 60 // character.character_data[self.index]['attack3Frame']
+            self.sprite_sheet = Spritesheet(character.character_data[self.index]['attack3'], character.character_data[self.index]['attack3Frame'])
     def increaseframe(self):
         """增加動畫幀，根據 frame_rate 決定是否更新"""
         self.frame_counter += 1
@@ -367,13 +397,16 @@ class Player(pygame.sprite.Sprite):
             # 攻擊動畫到最後一幀時不循環
             if self.status == ATK and self.frame == character.character_data[self.index]['attack1Frame'] - 1:
                 self.attacking = False
-                #self.changeStatus(IDLE)
                 return
             if self.status == DEFEND and self.frame == character.character_data[self.index]['protectFrame'] - 1:
                 return
             if self.status == RANGE_ATK and self.frame == character.character_data[self.index]['attack2Frame'] - 1:
                 self.attacking = False
                 return
+            if self.status == SPEC_ATK and self.frame == character.character_data[self.index]['attack3Frame'] - 1:
+                self.attacking = False
+                return
+            
             self.frame = (self.frame + 1) % self.sprite_sheet.num_sprites  # 更新幀
             self.frame_counter = 0  # 重置計數器
 
@@ -419,17 +452,20 @@ class Player(pygame.sprite.Sprite):
             
         # attack kits
         if keys[self.atk_key]:
-            self.attack(self.other_player)
+            self.attack()
             self.movelimittime = 15 # 0.25s can't move, run animation
         if keys[self.range_atk_key]:
+            self.movelimittime = 8 # 0.13s can't move, run animation
             if self.ultbufftime > 0 and self.index == 0:
-                self.range_attack(self.other_player, self.projectiles_group, "back")
+                #self.range_attack(self.other_player, self.projectiles_group, "back")
+                self.range_attack("back")
             else:
-                self.range_attack(self.other_player, self.projectiles_group, "normal")
+                #self.range_attack(self.other_player, self.projectiles_group, "normal")
+                self.range_attack("normal")
         if keys[self.special_key]:
-            self.special_attack(self.other_player)    
+            self.special_attack()    
         if keys[self.energy_atk_key]:
-            self.power_attack(self.other_player)
+            self.power_attack()
 
         
  ## range attack for commander and samurai

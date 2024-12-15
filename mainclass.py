@@ -38,16 +38,16 @@ def main_game():
     player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
 
     # 設定玩家對手
-    player1.other_player = player2
-    player2.other_player = player1
+    player1.setOpponent(player2)
+    player2.setOpponent(player1)
     
     # 加入玩家到畫面
     scrn.addPlayer(player1, player2)
     
     # 初始化射擊物件群組
     projectiles_group = pygame.sprite.Group()
-    player1.projectiles_group = projectiles_group
-    player2.projectiles_group = projectiles_group
+    player1.setProjectileGroup(projectiles_group)
+    player2.setProjectileGroup(projectiles_group)
 
     while running:
         keys = pygame.key.get_pressed()
@@ -76,7 +76,7 @@ def main_game():
 
         # Blit background image
         background.draw(scrn.screen)
-        scrn.all_sprites.draw(scrn.screen)
+        #scrn.all_sprites.draw(scrn.screen)
         projectiles_group.draw(scrn.screen)
         
         #blit player
@@ -99,10 +99,10 @@ def main_game():
         # 檢查遊戲結束
         if player1.health <= 0 or player2.health <= 0 or countdown_time <= 0:
             # 顯示遊戲結束畫面
-            winner = "Player 1" if player2.health < player1.health else "Player 2"
-            if(player1.health == player2.health):
-                winner = "Tie"
-            scrn.show_game_over(winner)
+            # winner = "Player 1" if player2.health < player1.health else "Player 2"
+            # if(player1.health == player2.health):
+            #     winner = "Tie"
+            scrn.show_game_over()
 
             # 重新開始遊戲或離開遊戲
             keys = pygame.key.get_pressed()
@@ -114,10 +114,13 @@ def main_game():
                 player1 = Player(RED, player1_x, player1_y, playerlist[0])
                 player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
 
-                player1.other_player = player2
-                player2.other_player = player1
-
+                player1.setOpponent(player2)
+                player2.setOpponent(player1)
                 scrn.addPlayer(player1, player2)
+                # 初始化射擊物件群組
+                projectiles_group = pygame.sprite.Group()
+                player1.setProjectileGroup(projectiles_group)
+                player2.setProjectileGroup(projectiles_group)
 
                 # 重置倒計時
                 countdown_time = 185

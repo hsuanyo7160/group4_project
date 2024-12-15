@@ -12,21 +12,23 @@ class Screen:
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
-        self.all_sprites = pygame.sprite.Group()
+        #self.all_sprites = pygame.sprite.Group()
 
         self.health_change_speed = 1  # 控制血量變化速度
         self.energy_change_speed = 3  # 控制能量變化速度
     def addPlayer(self, p1, p2):
         self.player1 = p1
         self.player2 = p2
-        self.all_sprites.add(self.player1)
-        self.all_sprites.add(self.player2)
     # 顯示 "遊戲結束" 畫面
-    def show_game_over(self, winner):
+    def show_game_over(self):
         # First text (game over message)
         # font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
         font = pygame.font.Font(FONT, 48)
-        text = font.render(f"Game Over!  {winner} Wins!", True, RED)
+        if(self.player1.health == self.player2.health):
+            text = font.render(f"Game Over!  Tie!", True, RED)
+        else:
+            winner = "Player 1" if self.player2.health < self.player1.health else "Player 2"
+            text = font.render(f"Game Over!  {winner} Wins!", True, RED)   
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))  # Center the text
         self.screen.blit(text, text_rect)
 
@@ -36,7 +38,7 @@ class Screen:
         tip_rect = tip.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))  # Center the tip text
         self.screen.blit(tip, tip_rect)
     
-    def draw_gradient_bar(self, screen, start_color, end_color, rect):
+    def draw_gradient_bar(self, start_color, end_color, rect):
         for i in range(rect.width):
             # 計算漸層顏色
             ratio = i / rect.width
@@ -45,7 +47,7 @@ class Screen:
                 int(start_color.g * (1 - ratio) + end_color.g * ratio),
                 int(start_color.b * (1 - ratio) + end_color.b * ratio)
             )
-            pygame.draw.line(screen, color, (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
+            pygame.draw.line(self.screen, color, (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
     
     def update_displayed_health_energy(self, player, health_change_speed, energy_change_speed):
         # 使顯示的血量和能量逐漸逼近實際值
@@ -74,19 +76,19 @@ class Screen:
             self.update_displayed_health_energy(player, self.health_change_speed, self.energy_change_speed)
 
         # 玩家1的血量條 - 漸層從亮紅到深紅
-        self.draw_gradient_bar(self.screen, Color(255, 0, 0), Color(139, 0, 0), pygame.Rect(20, 20, self.player1.displayed_health * 2, 18))
+        self.draw_gradient_bar(Color(255, 0, 0), Color(139, 0, 0), pygame.Rect(20, 20, self.player1.displayed_health * 2, 18))
         pygame.draw.rect(self.screen, WHITE, (20, 20, 400, 20), 2)  # 邊框
 
         # 玩家1的能量條 - 漸層從亮黃到橙色
-        self.draw_gradient_bar(self.screen, Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(20, 50, self.player1.displayed_energy * 3, 8))
+        self.draw_gradient_bar(Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(20, 50, self.player1.displayed_energy * 3, 8))
         pygame.draw.rect(self.screen, WHITE, (20, 50, 300, 10), 2)  # 邊框
 
         # 玩家2的血量條
-        self.draw_gradient_bar(self.screen, Color(0, 0, 255), Color(0, 0, 139), pygame.Rect(WIDTH - 20 - self.player2.displayed_health * 2, 20, self.player2.displayed_health * 2, 18))
+        self.draw_gradient_bar(Color(0, 0, 255), Color(0, 0, 139), pygame.Rect(WIDTH - 20 - self.player2.displayed_health * 2, 20, self.player2.displayed_health * 2, 18))
         pygame.draw.rect(self.screen, WHITE, (WIDTH - 420, 20, 400, 20), 2)
 
         # 玩家2的能量條
-        self.draw_gradient_bar(self.screen, Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(WIDTH - 20 - self.player2.displayed_energy * 3, 50, self.player2.displayed_energy * 3, 8))
+        self.draw_gradient_bar(Color(255, 255, 0), Color(255, 140, 0), pygame.Rect(WIDTH - 20 - self.player2.displayed_energy * 3, 50, self.player2.displayed_energy * 3, 8))
         pygame.draw.rect(self.screen, WHITE, (WIDTH - 320, 50, 300, 10), 2)
     
     def show_player_status(self):
