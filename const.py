@@ -31,6 +31,7 @@ NONE = 6
 ATK = 7
 SPEC_ATK = 8
 RANGE_ATK = 9
-DEAD = 10
+POW_ATK = 10
+DEAD = 11
 # 邊界
 BORDER = (-200, 1400)
