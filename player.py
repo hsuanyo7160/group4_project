@@ -362,9 +362,29 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.image.set_alpha(self.transparency)
         screen.blit(self.image, self.rect)
+        self.draw_indicator(screen, zoom)
+        
+
         return zoom
         
+    def draw_indicator(self, screen, zoom):
+        # Draw an inverted triangle above the player's head
+        triangle_color = self.color
+        triangle_height = int(20 * zoom)  # Height of the triangle
+        triangle_width = int(20 * zoom)  # Base width of the triangle
         
+        triangle_x = self.rect.centerx
+        triangle_y = self.rect.top + triangle_height + int(50 * zoom)  # Place the triangle slightly above the head
+        
+        # Define the points of the triangle
+        triangle_points = [
+            (triangle_x, triangle_y),  # Top of the triangle
+            (triangle_x - triangle_width // 2, triangle_y - triangle_height),  # Bottom-left
+            (triangle_x + triangle_width // 2, triangle_y - triangle_height),  # Bottom-right
+        ]
+        
+        # Draw the triangle
+        pygame.draw.polygon(screen, triangle_color, triangle_points)
         
 
     def changeStatus(self, status):
