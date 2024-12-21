@@ -1,6 +1,7 @@
 import pygame
 import sys
 from player import Player, Background
+from music import Music
 from const import *
 from screen import Screen
 # 初始化 pygame
@@ -9,11 +10,12 @@ pygame.init()
 # 設定遊戲畫面
 pygame.display.set_caption('2D Battle Game - Player vs Player')
 scrn= Screen(WIDTH, HEIGHT)
-
+music = Music(soundpack["bgm2"])
 
 
 # 主遊戲迴圈
 def main_game():
+    music.play()
     running = True
     # show menu
     if not scrn.show_main_menu():
@@ -34,8 +36,8 @@ def main_game():
     player2_x, player2_y = WIDTH - 400, HEIGHT - 420
 
     # 初始化玩家
-    player1 = Player(RED, player1_x, player1_y, playerlist[0])
-    player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
+    player1 = Player(RED, player1_x, player1_y, playerlist[0], music)
+    player2 = Player(BLUE, player2_x, player2_y, playerlist[1], music)
 
     # 設定玩家對手
     player1.setOpponent(player2)
@@ -50,13 +52,20 @@ def main_game():
     player2.setProjectileGroup(projectiles_group)
 
     deadcounter = 0
+    music.stop()
+    music.changebgm(soundpack["bgm1"])
+    music.play()
     while running:
+        
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         
-        if countdown_time > 0 and countdown_time < 180:# and player1.health > 0 and player2.health > 0:
+        if countdown_time == 180:
+            player1.setlasttick(pygame.time.get_ticks())
+            player2.setlasttick(pygame.time.get_ticks())
+        if countdown_time > 0 and countdown_time <= 180:# and player1.health > 0 and player2.health > 0:
             player1.handleinput(keys)
             player2.handleinput(keys)
             player1.update()
@@ -110,15 +119,16 @@ def main_game():
             # 顯示遊戲結束畫面
             if deadcounter > 60:
                 scrn.show_game_over()
-                # 重新開始遊戲或離開遊戲
+                # 重新開始遊戲或離開遊戲wwwwwwwwww
+                music.stop()
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_r]:
                     # 重置玩家
                     player1.kill()
                     player2.kill()
 
-                    player1 = Player(RED, player1_x, player1_y, playerlist[0])
-                    player2 = Player(BLUE, player2_x, player2_y, playerlist[1])
+                    player1 = Player(RED, player1_x, player1_y, playerlist[0], music)
+                    player2 = Player(BLUE, player2_x, player2_y, playerlist[1], music)
 
                     player1.setOpponent(player2)
                     player2.setOpponent(player1)
@@ -131,6 +141,7 @@ def main_game():
                     # 重置倒計時
                     countdown_time = 185
                     deadcounter = 0
+                    music.play()
                 elif keys[pygame.K_q]:
                     running = False
             else :
@@ -140,6 +151,7 @@ def main_game():
         
         pygame.display.update()
         scrn.clock.tick(FPS)
+    music.stop()
     pygame.quit()
     sys.exit()
 

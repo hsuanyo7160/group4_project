@@ -3,6 +3,7 @@ from ch import character
 from const import *
 from spritesheet import Spritesheet
 import time
+from music import Music
 
 def scale_image(image, target_height):
     # 獲取原始尺寸
@@ -15,7 +16,7 @@ def scale_image(image, target_height):
     return scaled_image
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, color, x, y, index):
+    def __init__(self, color, x, y, index, music):
         super().__init__()
         # Model
         self.color = color
@@ -24,6 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.index = index
         self.sprite_sheet = Spritesheet(character.character_data[index]['idle'], character.character_data[self.index]['idleFrame'])
+        self.music = music
         self.frame_counter = 0  # 計數器
         self.frame_rate = 10    # 幀速率，每 10 幀更新一次動畫幀
         self.frame = 0
@@ -69,7 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.range_atk_timer = 0
         self.special_timer = 0
         self.common_timer = 0
-        self.last_tick = time.time()
+        self.last_tick = 0
         # Attributes
         self.attack_damage = character.character_data[index]['attack_damage']
         self.attack_damage_powerful = character.character_data[index]['attack_damage_powerful']
@@ -95,6 +97,9 @@ class Player(pygame.sprite.Sprite):
         # 狀態屬性
         self.trails = []  # 存放殘影數據的列表
         self.trail_lifetime = 10  # 殘影的生命時間（幀數）
+
+    def setlasttick(self, tick):
+        self.last_tick = tick
 
     def setOpponent(self, player):
         self.other_player = player
@@ -125,7 +130,6 @@ class Player(pygame.sprite.Sprite):
         self.trails = [trail for trail in self.trails if trail["life"] > 0]  # 移除過期的殘影
 
     def update(self):
-        
         self.increaseframe()
         self.movable = True
         # Debuff
@@ -180,6 +184,7 @@ class Player(pygame.sprite.Sprite):
             self.movable = False
             self.guardtime -= 1
             if(self.health < self.prehealth):
+                self.music.play("defend")
                 print("guard")
                 self.health = self.prehealth
                 self.guardtime = 0
@@ -202,7 +207,7 @@ class Player(pygame.sprite.Sprite):
                 self.energy = ENERGY_FULL
 
         # Gravity
-        if self.jumping:
+        if self.pos_y < HEIGHT - 420:
             self.y_velocity += GRAVITY
             if self.y_velocity > MAX_FALL_SPEED:
                 self.y_velocity = MAX_FALL_SPEED
@@ -217,7 +222,7 @@ class Player(pygame.sprite.Sprite):
             self.jump_count = 0  # Reset jump count when the player lands
         
         # update timer
-        current_time = time.time()
+        current_time = pygame.time.get_ticks() / 1000
         time_passed = current_time - self.last_tick
         self.atk_timer += time_passed
         self.range_atk_timer += time_passed
@@ -233,6 +238,7 @@ class Player(pygame.sprite.Sprite):
                 
     def attack(self):
         if(self.atk_timer > ATTACK_COOLDOWN and not self.defending and self.common_timer > ATTACK_COOLDOWN):
+            self.music.play("atk")
             # 流血狀態攻擊會扣血
             if self.bleed > 0:
                 self.health -= 5
@@ -256,6 +262,7 @@ class Player(pygame.sprite.Sprite):
                 if self.other_player.status == DEFEND and ((self.other_player.pos_x > self.pos_x and self.other_player.facing_left) or (self.other_player.pos_x <= self.pos_x and not self.other_player.facing_left)):
                     damage -= self.other_player.defend_strength
                     damage = max(damage, 0)  # 確保傷害不為負數
+                    self.other_player.music.play("defend")
 
                 # 將傷害應用到對手
                 self.other_player.health -= damage
@@ -322,16 +329,18 @@ class Player(pygame.sprite.Sprite):
             self.range_cooldown = 0.2
             self.range_damage += 3
             self.velocity -= 2
-            
+            self.music.play("archult")
         elif self.index == 1:
             ## Increase Speed, attack, and Decrease defense for 10s
             self.ultbufftime = 600
             self.attack_damage = self.attack_damage + 3
             self.defend_strength = self.defend_strength - 5
             self.velocity = self.velocity + 3
+            self.music.play("samult")
 
         elif self.index == 2:
             # normal attack
+            self.music.play("comult")
             self.changeStatus(POW_ATK)
             self.attacking = True
             self.atk_timer = 0
@@ -343,7 +352,7 @@ class Player(pygame.sprite.Sprite):
         # Draw trails
         self.draw_trails(screen)
         # Draw player
-        self.image = self.sprite_sheet.get_image(self.frame, BLACK)
+        self.image = self.sprite_sheet.get_image(self.frame)
         if self.facing_left:
             self.image = pygame.transform.flip(self.image, True, False)
         if abs(camera_pos[0] - self.pos_x) < 500:
@@ -461,11 +470,13 @@ class Player(pygame.sprite.Sprite):
 
     def playerdead(self):
         self.changeStatus(DEAD)
+        self.music.play("dead")
 
     def handleinput(self, keys):
         if self.status == DEAD:
             return
         self.moving = False
+        
         if self.movable:
             if self.jumping: # If you're in the air and press down, you will fall faster
                 if keys[self.down]:  # 加速下落
@@ -497,17 +508,22 @@ class Player(pygame.sprite.Sprite):
                     if not self.jumping: self.changeStatus(WALK)
                     #self.image = pygame.transform.flip(self.image, not self.facing_left, False)
             # Jump logic with 0.5 second delay after last jump
+            
             if keys[self.up] and self.jump_count < 2 and self.last_tick - self.last_jump_time > 0.4 and not self.defending:
                 self.y_velocity = JUMP_STRENGTH
                 self.jumping = True
                 self.changeStatus(JUMP)
+                self.music.play("jump")
                 self.jump_count += 1
                 self.last_jump_time = self.last_tick  # Update last jump time
+            
+            
             # else:
             #     self.changeStatus(DEFEND)
             
         # attack kits
         if keys[self.atk_key]:
+            
             self.attack()
             self.movelimittime = 15 # 0.25s can't move, run animation
         if keys[self.range_atk_key]:
@@ -587,13 +603,13 @@ class Projectile(pygame.sprite.Sprite):
             print("hit")
             damage = self.damage
             if self.target.defending and ((self.target.pos_x > self.pos_x and self.target.facing_left) or (self.target.pos_x <= self.pos_x and not self.target.facing_left)):
+                self.target.music.play("defend")
                 damage = self.damage - self.target.defend_strength
                 if damage < 0:
                     damage = 0
             self.target.health -= damage  # Apply damage
             if self.effect == "back":
-                backdir = -1 if self.target.rect.x - self.rect.x > 0 else 1
-                self.target.pos_x += 10 * backdir
+                self.target.pos_x += 10 * self.direction
             self.kill() 
         
             

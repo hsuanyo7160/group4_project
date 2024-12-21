@@ -35,3 +35,9 @@ POW_ATK = 10
 DEAD = 11
 # 邊界
 BORDER = (-200, 1400)
+#sound pack
+soundpack = { "jump": "sound/jump.mp3", "atk": "sound/atk.mp3",
+              "dead": "sound/dead.mp3", "defend": "sound/block.mp3",
+              "bgm1": "sound/bgm1.mp3", "bgm2": "sound/bgm2.mp3",
+              "comult": "sound/comult.mp3", "archult": "sound/archult.mp3",
+              "samult": "sound/samult.mp3"}

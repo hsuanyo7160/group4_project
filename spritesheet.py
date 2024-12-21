@@ -17,6 +17,6 @@ class Spritesheet:
         image.blit(self.sheet, (0, 0), rect)
 
         # Apply the colorkey for transparency (if provided)
-        #if colorkey is not None:
-            #image.set_colorkey(colorkey)
+        if colorkey is not None:
+            image.set_colorkey(colorkey)
         return image
