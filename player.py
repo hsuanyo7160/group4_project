@@ -28,6 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_rate = 10    # 幀速率，每 10 幀更新一次動畫幀
         self.frame = 0
         self.trail_counter = 2
+        self.transparency = 255
         ############ Need to Optimize##############
         self.rect = self.image.get_rect()
         self.rect.centerx = x
@@ -183,7 +184,7 @@ class Player(pygame.sprite.Sprite):
                 self.health = self.prehealth
                 self.guardtime = 0
                 self.attacking = False
-                self.other_player.movelimittime = 30
+                self.other_player.movelimittime = 60
                 if self.atkbufftime <= 0:
                     self.attack_damage = self.attack_damage + 3
                     self.velocity = self.velocity + 3
@@ -302,7 +303,11 @@ class Player(pygame.sprite.Sprite):
             self.pos_y = self.other_player.pos_y
             self.movelimittime = 60
             ## deal lots of damage
-            self.other_player.health -= 10
+            damage = 10
+            if self.other_player.defending:
+                damage -= self.other_player.defend_strength
+                damage = max(damage, 0)  # 確保傷害不為負數
+            self.other_player.health -= damage
             
         self.energy -= 30
     
@@ -355,7 +360,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.centery = self.pos_y - camera_pos[1] + 300
         
         self.mask = pygame.mask.from_surface(self.image)
-
+        self.image.set_alpha(self.transparency)
         screen.blit(self.image, self.rect)
         return zoom
         
@@ -491,8 +496,17 @@ class Player(pygame.sprite.Sprite):
                 self.range_attack("back")
             else:
                 self.range_attack("normal")
-        if keys[self.special_key]:
-            self.special_attack()    
+        if keys[self.special_key] or self.transparency != 255:
+            if self.index == 2:
+                if self.energy < 30:
+                    return
+                if self.transparency <= 0:
+                    self.transparency = 255
+                    self.special_attack()
+                else:
+                    self.transparency -= 16
+            else:
+                self.special_attack()    
         if keys[self.energy_atk_key]:
             if self.index == 2:
                 self.movelimittime = 15 # 0.25s can't move, run animation
