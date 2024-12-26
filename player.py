@@ -401,9 +401,7 @@ class Player(pygame.sprite.Sprite):
         
 
     def changeStatus(self, status):
-        # if self.status == ATK or self.status == POW_ATK or self.status == RANGE_ATK or self.status == SPEC_ATK:
-        #     self.atkcollide = False
-        #     self.attacking = False
+
         if self.status != status :
             self.frame = 0
             self.frame_counter = 0

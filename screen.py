@@ -12,6 +12,9 @@ class Screen:
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
+        self.pausebut = pygame.Rect(WIDTH // 2 - 20, 60, 40, 40)  # 暫停按鈕的位置與大小
+        self.resumebut = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 100, 200, 100)  # 暫停介面的繼續按鈕
+        self.quitbut = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 100, 200, 100)  # 暫停介面的離開按鈕
         #self.all_sprites = pygame.sprite.Group()
 
         self.health_change_speed = 1  # 控制血量變化速度
@@ -23,7 +26,7 @@ class Screen:
     def show_game_over(self):
         # First text (game over message)
         # font_path = "font/Modak-Regular.ttf"  # 替換為你的字體路徑
-        font = pygame.font.Font(FONT, 48)
+        font = pygame.font.Font(FONT2, 48)
         if(self.player1.health == self.player2.health):
             text = font.render(f"Game Over!  Tie!", True, RED)
         else:
@@ -33,8 +36,8 @@ class Screen:
         self.screen.blit(text, text_rect)
 
         # Second text (tip message)
-        font = pygame.font.SysFont('Arial', 20)
-        tip = font.render("Press 'R' to restart , Q to leave", True, WHITE)
+        font = pygame.font.Font(FONT2, 20)
+        tip = font.render("Press R to restart , Q to leave", True, WHITE)
         tip_rect = tip.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))  # Center the tip text
         self.screen.blit(tip, tip_rect)
     
@@ -174,7 +177,7 @@ class Screen:
         mapbackground = pygame.image.load('images/background/map.png')
         mapbackground = pygame.transform.scale(mapbackground, (WIDTH, HEIGHT))
 
-        font = pygame.font.SysFont('Arial', 32)
+        font = pygame.font.Font(FONT2, 32)
         title_text = font.render('Choose Your Map:', True, WHITE)
 
         # Load preview images for map selection
@@ -247,7 +250,7 @@ class Screen:
         characterbackground = pygame.image.load('images/background/map.png')
         characterbackground = pygame.transform.scale(characterbackground, (WIDTH, HEIGHT))
 
-        font = pygame.font.SysFont('Arial', 32)
+        font = pygame.font.Font(FONT2, 32)
         title_text = font.render('Choose Your Character:', True, WHITE)
         player_texts = [
             font.render('Player 1, Choose Your Character:', True, WHITE),
@@ -316,8 +319,41 @@ class Screen:
     def show_ready_countdown(self, countdown_time):
         # 倒數計時文字
         countdown_time = math.ceil(countdown_time) - 181
-        font = pygame.font.SysFont('Arial', 48)
+        font = pygame.font.Font(FONT2, 48)
         texts = ["Start!", "1", "2", "3", "Ready"]
         countdown_text = font.render(texts[countdown_time], True, WHITE)
         self.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, HEIGHT // 2 - countdown_text.get_height() // 2))
 
+    def draw_pause_menu(self):
+        """繪製暫停介面"""
+        # 遮罩背景
+        overlay = pygame.Surface((self.width, self.height))
+        overlay.set_alpha(10)  # 調整透明度
+        overlay.fill((50,50,50))
+        self.screen.blit(overlay, (0, 0))
+
+        # 繪製按鈕
+        font = pygame.font.Font(FONT2, 36)
+        pygame.draw.rect(self.screen, GRAY1, self.resumebut)
+        resume_text = font.render("Resume", True, GRAY2)
+        self.screen.blit(resume_text, (self.resumebut.x + 40, self.resumebut.y + 38))
+
+        pygame.draw.rect(self.screen, GRAY1, self.quitbut)
+        quit_text = font.render("Quit", True, GRAY2)
+        self.screen.blit(quit_text, (self.quitbut.x + 66, self.quitbut.y + 38))
+
+    def drawpausebutton(self):
+        p1 = pygame.rect.Rect(WIDTH // 2 - 10, 68, 4, 24)
+        p2 = pygame.rect.Rect(WIDTH // 2 + 6, 68, 4, 24)
+        pygame.draw.rect(self.screen, GRAY, self.pausebut)
+        pygame.draw.rect(self.screen, WHITE, p1)
+        pygame.draw.rect(self.screen, WHITE, p2)
+    
+    def get_pause_button_rect(self):
+        return self.pausebut
+    
+    def get_resume_button_rect(self):
+        return self.resumebut
+    
+    def get_quit_button_rect(self):
+        return self.quitbut

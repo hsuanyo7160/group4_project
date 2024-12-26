@@ -12,11 +12,12 @@ pygame.display.set_caption('2D Battle Game - Player vs Player')
 scrn= Screen(WIDTH, HEIGHT)
 music = Music(soundpack["bgm2"])
 
-
 # 主遊戲迴圈
-def main_game():
+def main():
+    music.changebgm(soundpack["bgm2"])
     music.play()
     running = True
+    paused = False
     # show menu
     if not scrn.show_main_menu():
         return
@@ -27,7 +28,7 @@ def main_game():
     map_choice = scrn.choose_map()
     # 倒數計時
     countdown_time = 185
-    font = pygame.font.SysFont('Arial', 36)
+    font = pygame.font.Font(FONT2, 36)
     # 載入背景圖像
     background = Background(map_choice)
     
@@ -56,12 +57,32 @@ def main_game():
     music.changebgm(soundpack["bgm1"])
     music.play()
     while running:
-        
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        
+                return False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if not paused:
+                    if scrn.get_pause_button_rect().collidepoint(event.pos):
+                        paused = True
+                else:
+                    if scrn.get_resume_button_rect().collidepoint(event.pos):
+                        paused = False
+                        player1.setlasttick(pygame.time.get_ticks() / 1000)
+                        player2.setlasttick(pygame.time.get_ticks() / 1000)
+                    if scrn.get_quit_button_rect().collidepoint(event.pos):
+                        running = False
+        if paused:
+            scrn.draw_pause_menu()
+            if pygame.mixer.music.get_busy():  # 檢查音樂是否正在播放
+                music.pause()
+            pygame.display.update()
+            continue
+        else:
+            if not pygame.mixer.music.get_busy():
+                music.unpause()
+        # 遊戲進行中
         if countdown_time == 180:
             player1.setlasttick(pygame.time.get_ticks())
             player2.setlasttick(pygame.time.get_ticks())
@@ -86,7 +107,7 @@ def main_game():
 
         # Blit background image
         background.draw(scrn.screen)
-        #scrn.all_sprites.draw(scrn.screen)
+        scrn.drawpausebutton()
         projectiles_group.draw(scrn.screen)
         
         #blit player
@@ -114,12 +135,11 @@ def main_game():
                     player1.playerdead()
                 if player2.health <= 0:
                     player2.playerdead()
-                    print("player2 dead")
             
             # 顯示遊戲結束畫面
             if deadcounter > 60:
                 scrn.show_game_over()
-                # 重新開始遊戲或離開遊戲wwwwwwwwww
+                # 重新開始遊戲或離開遊戲
                 music.stop()
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_r]:
@@ -152,8 +172,8 @@ def main_game():
         pygame.display.update()
         scrn.clock.tick(FPS)
     music.stop()
-    pygame.quit()
-    sys.exit()
+    return True
+    
 
 # def menu_loop():
 #     menu_running = True
@@ -175,5 +195,8 @@ def main_game():
 #                     sys.exit()
 
 #menu_loop()
-
-main_game()
+if __name__ == "__main__":
+    while main():
+        pass
+    pygame.quit()
+    sys.exit()

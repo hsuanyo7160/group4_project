@@ -3,6 +3,7 @@
 WIDTH, HEIGHT = 1200, 600
 # 字體
 FONT = "font/Modak-Regular.ttf"
+FONT2 = "font/LowresPixel-Regular.otf"
 # 顏色設置
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -10,6 +11,9 @@ BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
+GRAY = (130, 130, 130)
+GRAY1 = (112, 112, 112)
+GRAY2 = (222, 222, 222)
 FPS = 60
 # 設定遊戲的增減速度
 HEALTH_CHANGE_SPEED = 2
