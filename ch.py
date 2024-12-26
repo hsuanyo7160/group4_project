@@ -88,7 +88,7 @@ class character:
             "walk": "images/character/Commander/Run.png",
             "jump": "images/character/Commander/Jumpup1.png",
             "normatk": "images/character/Commander/Attack_2.png",
-            "rngatk": "images/character/Commander/Ranged2.png",
+            "rngatk": "images/character/Commander/Ranged.png",
             #"specatk": "images/character/Commander/Attack_3.png",
             "powatk": "images/character/Commander/Attack_3.png",
             "protect": "images/character/Commander/Protect.png",

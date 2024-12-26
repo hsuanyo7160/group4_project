@@ -185,11 +185,10 @@ class Player(pygame.sprite.Sprite):
             self.guardtime -= 1
             if(self.health < self.prehealth):
                 self.music.play("defend")
-                print("guard")
                 self.health = self.prehealth
                 self.guardtime = 0
                 self.attacking = False
-                self.other_player.movelimittime = 60
+                self.other_player.setmovelt(60)
                 if self.atkbufftime <= 0:
                     self.attack_damage = self.attack_damage + 3
                     self.velocity = self.velocity + 3
@@ -243,6 +242,7 @@ class Player(pygame.sprite.Sprite):
             if self.bleed > 0:
                 self.health -= 5
             #player1_attack_time = current_time
+            self.setmovelt(15) # 0.25s can't move, run animation
             self.changeStatus(ATK)
             self.atk_timer = 0
             self.attacking = True
@@ -276,6 +276,8 @@ class Player(pygame.sprite.Sprite):
         if(self.range_atk_timer > self.range_cooldown and self.defending == False and self.common_timer > ATTACK_COOLDOWN):
             if self.bleed > 0:
                 self.health -= 5
+            self.music.play("arrow")
+            self.setmovelt(15) # 0.25s can't move, run animation
             self.changeStatus(RANGE_ATK)
             self.attacking = True
             self.range_atk_timer = 0
@@ -308,7 +310,8 @@ class Player(pygame.sprite.Sprite):
             ## teleport to enemy side and start shyuli
             self.pos_x = self.other_player.pos_x
             self.pos_y = self.other_player.pos_y
-            self.movelimittime = 60
+            self.music.play("comspec")
+            self.setmovelt(60)
             ## deal lots of damage
             damage = 10
             if self.other_player.defending:
@@ -340,6 +343,7 @@ class Player(pygame.sprite.Sprite):
 
         elif self.index == 2:
             # normal attack
+            self.setmovelt(15) # 0.25s can't move, run animation
             self.music.play("comult")
             self.changeStatus(POW_ATK)
             self.attacking = True
@@ -397,6 +401,9 @@ class Player(pygame.sprite.Sprite):
         
 
     def changeStatus(self, status):
+        # if self.status == ATK or self.status == POW_ATK or self.status == RANGE_ATK or self.status == SPEC_ATK:
+        #     self.atkcollide = False
+        #     self.attacking = False
         if self.status != status :
             self.frame = 0
             self.frame_counter = 0
@@ -424,7 +431,7 @@ class Player(pygame.sprite.Sprite):
             self.frame_rate = 15 // character.character_data[self.index]['normatkFrame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['normatk'], character.character_data[self.index]['normatkFrame'])
         elif status == RANGE_ATK:
-            self.frame_rate = 8 // character.character_data[self.index]['rngatkFrame']
+            self.frame_rate = 15 // character.character_data[self.index]['rngatkFrame']
             self.sprite_sheet = Spritesheet(character.character_data[self.index]['rngatk'], character.character_data[self.index]['rngatkFrame'])
         elif status == SPEC_ATK:
             self.frame_rate = 60 // character.character_data[self.index]['specatkFrame']
@@ -522,17 +529,17 @@ class Player(pygame.sprite.Sprite):
             #     self.changeStatus(DEFEND)
             
         # attack kits
-        if keys[self.atk_key]:
-            
+
+        if keys[self.atk_key]:     
             self.attack()
-            self.movelimittime = 15 # 0.25s can't move, run animation
-        if keys[self.range_atk_key]:
-            self.movelimittime = 8 # 0.13s can't move, run animation
+            # self.setmovelt(15) # 0.25s can't move, run animation
+        elif keys[self.range_atk_key]:
+            # self.setmovelt(8) # 0.13s can't move, run animation
             if self.ultbufftime > 0 and self.index == 0:
                 self.range_attack("back")
             else:
                 self.range_attack("normal")
-        if keys[self.special_key] or self.transparency != 255:
+        elif keys[self.special_key] or self.transparency != 255:
             if self.index == 2:
                 if self.energy < 30:
                     return
@@ -543,12 +550,15 @@ class Player(pygame.sprite.Sprite):
                     self.transparency -= 16
             else:
                 self.special_attack()    
-        if keys[self.energy_atk_key]:
-            if self.index == 2:
-                self.movelimittime = 15 # 0.25s can't move, run animation
+        elif keys[self.energy_atk_key]:
+            # if self.index == 2:
+            #     self.setmovelt(15) # 0.25s can't move, run animation
             self.power_attack()
 
-            
+    def setmovelt(self, value):
+        if self.movelimittime < value:
+            self.movelimittime = value
+        
  ## range attack for commander and samurai
  ## samurai: lower dmg but slow enemy
  ## commander: add spd
@@ -600,7 +610,6 @@ class Projectile(pygame.sprite.Sprite):
         # Check collision with the target
         offset = (self.target.rect.x - self.rect.x, self.target.rect.y - self.rect.y)
         if self.mask.overlap(self.target.mask, offset):
-            print("hit")
             damage = self.damage
             if self.target.defending and ((self.target.pos_x > self.pos_x and self.target.facing_left) or (self.target.pos_x <= self.pos_x and not self.target.facing_left)):
                 self.target.music.play("defend")

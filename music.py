@@ -6,11 +6,13 @@ class Music:
         self.filename = filename
         self.jump = pygame.mixer.Sound(soundpack["jump"])
         self.atk = pygame.mixer.Sound(soundpack["atk"])
+        self.arrow = pygame.mixer.Sound(soundpack["arrow"])
         self.dead = pygame.mixer.Sound(soundpack["dead"])
         self.defend = pygame.mixer.Sound(soundpack["defend"])
         self.archerult = pygame.mixer.Sound(soundpack["archult"])
         self.commanderult = pygame.mixer.Sound(soundpack["comult"])
         self.samuraiult = pygame.mixer.Sound(soundpack["samult"])
+        self.comspec = pygame.mixer.Sound(soundpack["comspec"])
         
 
     def stop(self):
@@ -34,6 +36,8 @@ class Music:
             self.jump.play()
         elif sound == "atk":
             self.atk.play()
+        elif sound == "arrow":
+            self.arrow.play()
         elif sound == "dead":
             self.dead.play()
         elif sound == "defend":
@@ -44,5 +48,7 @@ class Music:
             self.commanderult.play()
         elif sound == "samult":
             self.samuraiult.play()
+        elif sound == "comspec":
+            self.comspec.play()
         else:
             print("sound not found")
