@@ -9,6 +9,12 @@
    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
    ```
 
+## Running the Project
+1. Ensure all dependencies are installed and the environment variable is set.
+2. Run the main script:
+```bash
+   python3 mainclass.py
+   ```
 
 ## Key Binding
 1. ' WD 'and 'left right' : Moving 
@@ -19,12 +25,7 @@
 6. ' H ' and ' , ' : Skill1           (-50 energy)
 7. ' J ' and ' M ' : Ultimate Skill   (-100 energy)
 
-## Running the Project
-1. Ensure all dependencies are installed and the environment variable is set.
-2. Run the main script:
-```bash
-   python3 mainclass.py
-   ```
+
 # Skill explanation
 ## Archer
 ![Archer](images/character/Archer/icon.png)
