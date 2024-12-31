@@ -123,6 +123,7 @@ def main():
         if countdown_time > 180:
             scrn.show_ready_countdown(countdown_time)
         scrn.draw_health_energy_bar()
+        scrn.show_player_status()
         scrn.screen.blit(countdown_text, (WIDTH // 2 - countdown_text.get_width() // 2, 20))
 
         ### print mask hitbox ###
