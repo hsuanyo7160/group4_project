@@ -16,37 +16,65 @@
    python3 mainclass.py
    ```
 
-## Key Binding
-1. ' WD 'and 'left right' : Moving 
-2. ' S ' and 'down': Defend
-3. ' W ' and ' up ': Jump
-4. ' F ' and ' / ' : Normal Attack
-5. ' G ' and ' . ' : Range  Attack
-6. ' H ' and ' , ' : Skill1           (-50 energy)
-7. ' J ' and ' M ' : Ultimate Skill   (-100 energy)
+# Game Controls
+
+### Movement
+| Keys              | Action       |
+|-------------------|--------------|
+| `W` / `D`         | Move Left / Right |
+
+### Defense
+| Keys              | Action       |
+|-------------------|--------------|
+| `S` / `Down`      | Defend       |
+
+### Jump
+| Keys              | Action       |
+|-------------------|--------------|
+| `W` / `Up`        | Jump         |
+
+### Attacks
+| Keys              | Action               |
+|-------------------|----------------------|
+| `F` / `/`         | Normal Attack        |
+| `G` / `.`         | Range Attack         |
+
+### Skills
+| Keys              | Action                 | Energy Cost |
+|-------------------|------------------------|-------------|
+| `H` / `,`         | Skill 1               | -50 Energy  |
+| `J` / `M`         | Ultimate Skill        | -100 Energy |
 
 
-# Skill explanation
-## Archer
+
+# Skill Explanation
+
+---
+
+## Archer  
 ![Archer](images/character/Archer/icon.png)
 
-### Skill 1
-Step back and shoot an arrow
-### Ultimate Skill
-Increase range attack speed and stunned opponent but slow yourself
+| Skill          | Description                                                                                     |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| **Skill 1**    | Step back swiftly and shoot an arrow, creating distance while dealing ranged damage.            |
+| **Ultimate**   | Increase ranged attack speed and stun the opponent, but reduce your movement speed temporarily. |
 
-## Commander
+---
+
+## Commander  
 ![Commander](images/character/Commander/icon.png)
 
-### Skill 1
-Teleport to your opponent and deal damage
-### Ultimate Skill
-Inflict your opponent with bleed effect (health drops when attacking)
+| Skill          | Description                                                                                     |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| **Skill 1**    | Teleport directly to your opponent and deal significant damage.                                 |
+| **Ultimate**   | Inflict a bleed effect on the opponent, causing their health to drop whenever they attack.      |
 
-## Samurai
+---
+
+## Samurai  
 ![Samurai](images/character/Samurai/icon.png)
 
-### Skill 1
-Block attack with a short time, if blocking successfully, u gain a buff
-### Ultimate Skill
-Increase damage, attack speed, speed 
+| Skill          | Description                                                                                     |
+|-----------------|-----------------------------------------------------------------------------------------------|
+| **Skill 1**    | Block an attack within a short window. If successful, gain a temporary buff.                    |
+| **Ultimate**   | Enhance your combat abilities, increasing damage, attack speed, and movement speed.             |
