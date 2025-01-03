@@ -147,6 +147,13 @@ class Player(pygame.sprite.Sprite):
             self.movable = False
             self.dashtime -= 1
             self.pos_x += 10 if self.facing_left else -10
+            if self.pos_x < BORDER[0]:
+                self.pos_x = BORDER[0]
+                self.dashtime = 0
+            elif self.pos_x > BORDER[1]:
+                self.pos_x = BORDER[1]
+                self.dashtime = 0
+            
             if self.dashtime <= 0:
                 self.dashtime = 0
                 
@@ -402,7 +409,7 @@ class Player(pygame.sprite.Sprite):
 
     def changeStatus(self, status):
 
-        if self.status != status :
+        if self.status != status or status == JUMP:
             self.frame = 0
             self.frame_counter = 0
         self.status = status
@@ -639,5 +646,5 @@ class Background(pygame.sprite.Sprite):
         self.image = scale_image(self.base_image, HEIGHT * 3 * zoom)
         self.rect = self.image.get_rect()
         self.rect.centerx = 1200 - camera_pos[0]
-        self.rect.centery = 600 - camera_pos[1]
+        self.rect.centery = 600 - camera_pos[1] - 300
 

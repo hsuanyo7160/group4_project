@@ -33,8 +33,8 @@ def main():
     background = Background(map_choice)
     
     # 初始化玩家位置
-    player1_x, player1_y = 100, HEIGHT - 420
-    player2_x, player2_y = WIDTH - 400, HEIGHT - 420
+    player1_x, player1_y = 200, HEIGHT - 420
+    player2_x, player2_y = WIDTH - 200, HEIGHT - 420
 
     # 初始化玩家
     player1 = Player(RED, player1_x, player1_y, playerlist[0], music)
@@ -83,9 +83,9 @@ def main():
             if not pygame.mixer.music.get_busy():
                 music.unpause()
         # 遊戲進行中
-        if countdown_time == 180:
-            player1.setlasttick(pygame.time.get_ticks())
-            player2.setlasttick(pygame.time.get_ticks())
+        if countdown_time - 180 < 1e-4 and countdown_time - 180 > -1e-4:
+            player1.setlasttick(pygame.time.get_ticks()/1000)
+            player2.setlasttick(pygame.time.get_ticks()/1000)
         if countdown_time > 0 and countdown_time <= 180:# and player1.health > 0 and player2.health > 0:
             player1.handleinput(keys)
             player2.handleinput(keys)
