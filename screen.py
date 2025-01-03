@@ -13,8 +13,8 @@ class Screen:
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
         self.pausebut = pygame.Rect(WIDTH // 2 - 20, 60, 40, 40)  # 暫停按鈕的位置與大小
-        self.resumebut = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 100, 200, 100)  # 暫停介面的繼續按鈕
-        self.quitbut = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 100, 200, 100)  # 暫停介面的離開按鈕
+        self.resumebut = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 150, 200, 100)  # 暫停介面的繼續按鈕
+        self.quitbut = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 50, 200, 100)  # 暫停介面的離開按鈕
         #self.all_sprites = pygame.sprite.Group()
 
         self.health_change_speed = 1  # 控制血量變化速度
